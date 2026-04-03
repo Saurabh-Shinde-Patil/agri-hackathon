@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+ultralytics
+python-multipart
+Pillow
+pydantic
+requests
+pydantic-settings
+numpy<2
