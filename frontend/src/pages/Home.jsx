@@ -44,7 +44,7 @@ export default function Home() {
   }
 
   return (
-    <main className="main-content">
+    <main className="grid grid-cols-1 md:grid-cols-2 gap-8 flex-1">
       <ImageUploader 
         onImageSelect={handleImageSelect}
         onDetect={handleDetect}
