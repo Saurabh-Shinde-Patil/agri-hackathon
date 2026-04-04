@@ -17,6 +17,14 @@ def create_app() -> FastAPI:
     # Include API routes
     app.include_router(api_router, prefix="/api")
 
+    # Key verification log (safe)
+    from .core.config import settings
+    if settings.gemini_api_key:
+        last_4 = settings.gemini_api_key[-4:]
+        print(f"🚀 AI Server starting... Gemini Key verified: ****{last_4}")
+    else:
+        print("⚠️ AI Server starting... WARNING: No Gemini API Key found!")
+
     return app
 
 app = create_app()

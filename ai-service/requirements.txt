@@ -7,3 +7,5 @@ pydantic
 requests
 pydantic-settings
 numpy<2
+scikit-learn
+joblib
