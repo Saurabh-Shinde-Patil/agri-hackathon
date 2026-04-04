@@ -2,35 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════
+   THEME VARIABLES — Dark & Light
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* Dark Theme (Default) */
+  --bg-color: #0b0f19;
+  --bg-secondary: #111827;
+  --panel-bg: rgba(20, 26, 41, 0.65);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --primary-color: #10b981;
+  --primary-hover: #059669;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-color: #3b82f6;
+  --card-bg: #1a2332;
+  --card-text: #e2e8f0;
+  --card-text-secondary: #94a3b8;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --scrollbar-track: #0b0f19;
+  --scrollbar-thumb: #1e293b;
+  --scrollbar-thumb-hover: #334155;
+}
+
+[data-theme="light"] {
+  --bg-color: #f0fdf4;
+  --bg-secondary: #ecfdf5;
+  --panel-bg: rgba(255, 255, 255, 0.75);
+  --panel-border: rgba(0, 0, 0, 0.08);
+  --primary-color: #059669;
+  --primary-hover: #047857;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --accent-color: #2563eb;
+  --card-bg: #ffffff;
+  --card-text: #1e293b;
+  --card-text-secondary: #475569;
+  --card-border: #d1d5db;
+  --scrollbar-track: #f1f5f9;
+  --scrollbar-thumb: #cbd5e1;
+  --scrollbar-thumb-hover: #94a3b8;
+}
+
 @layer base {
   body {
     @apply bg-bg-color text-text-primary font-outfit min-h-screen flex flex-col m-0;
     background-image: 
       radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.08), transparent 25%),
       radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08), transparent 25%);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
+}
+
+[data-theme="light"] body {
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.12), transparent 30%),
+    radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08), transparent 30%);
 }
 
 @layer components {
   .glass-panel {
     @apply bg-panel-bg backdrop-blur-md border border-panel-border rounded-lg shadow-2xl;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
   }
 }
 
-/* Maintain custom scrollbar if desired or other very specific base styles */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b0f19;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: var(--scrollbar-thumb-hover);
 }

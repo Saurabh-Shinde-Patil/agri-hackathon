@@ -180,48 +180,48 @@ export default function DetectionResult({ previewUrl, isDetecting, result, error
           {/* ══ Row 4: Analysis Grid — Symptoms, Causes, How It Spreads ══ */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Symptoms Card */}
-            <div className="bg-white p-8 rounded-[40px] shadow-2xl shadow-black/40 group hover:translate-y-[-4px] transition-all">
+            <div className="bg-card-bg p-8 rounded-[40px] shadow-2xl shadow-black/20 group hover:translate-y-[-4px] transition-all border border-card-border">
               <div className="flex items-center gap-3 text-[#059669] font-black mb-6">
                 <div className="w-10 h-10 rounded-2xl bg-[#059669]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Bug size={24} />
                 </div>
                 <h3 className="text-xl">Common Symptoms</h3>
               </div>
-              <p className="text-slate-600 leading-relaxed text-sm">
+              <p className="text-card-text-secondary leading-relaxed text-sm">
                 {result.symptoms || 'Symptom data not available.'}
               </p>
             </div>
 
             {/* Causes Card (NEW — same style as Symptoms) */}
-            <div className="bg-white p-8 rounded-[40px] shadow-2xl shadow-black/40 group hover:translate-y-[-4px] transition-all">
+            <div className="bg-card-bg p-8 rounded-[40px] shadow-2xl shadow-black/20 group hover:translate-y-[-4px] transition-all border border-card-border">
               <div className="flex items-center gap-3 text-[#d97706] font-black mb-6">
                 <div className="w-10 h-10 rounded-2xl bg-[#d97706]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Zap size={24} />
                 </div>
                 <h3 className="text-xl">Likely Causes</h3>
               </div>
-              <p className="text-slate-600 leading-relaxed text-sm">
+              <p className="text-card-text-secondary leading-relaxed text-sm">
                 {result.causes || 'Cause analysis is currently unavailable.'}
               </p>
             </div>
 
             {/* How It Spreads Card */}
-            <div className="bg-white p-8 rounded-[40px] shadow-2xl shadow-black/40 group hover:translate-y-[-4px] transition-all md:col-span-2">
+            <div className="bg-card-bg p-8 rounded-[40px] shadow-2xl shadow-black/20 group hover:translate-y-[-4px] transition-all md:col-span-2 border border-card-border">
               <div className="flex items-center gap-3 text-[#2563eb] font-black mb-6">
                 <div className="w-10 h-10 rounded-2xl bg-[#2563eb]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Wind size={24} />
                 </div>
                 <h3 className="text-xl">How It Spreads</h3>
               </div>
-              <p className="text-slate-600 leading-relaxed text-sm">
+              <p className="text-card-text-secondary leading-relaxed text-sm">
                 {result.how_it_spreads || 'Transmission data is currently under verification.'}
               </p>
             </div>
           </div>
 
           {/* ══ Row 5: Care Recommendations (Numbered List) ══ */}
-          <div className="bg-white p-10 rounded-[40px] shadow-2xl shadow-black/40">
-            <div className="flex items-center gap-3 text-[#059669] font-black mb-10 pb-6 border-b border-slate-100">
+          <div className="bg-card-bg p-10 rounded-[40px] shadow-2xl shadow-black/20 border border-card-border">
+            <div className="flex items-center gap-3 text-[#059669] font-black mb-10 pb-6 border-b border-card-border">
               <Leaf size={28} />
               <h3 className="text-3xl tracking-tight">Care Recommendations</h3>
             </div>
@@ -230,24 +230,24 @@ export default function DetectionResult({ previewUrl, isDetecting, result, error
               <div className="flex gap-6 group">
                 <div className="w-12 h-12 rounded-full bg-[#059669] text-white flex items-center justify-center font-black text-xl shrink-0 group-hover:scale-110 transition-transform shadow-lg shadow-[#059669]/20">1</div>
                 <div className="pt-2">
-                  <p className="text-slate-700 font-bold mb-1 uppercase tracking-widest text-[10px]">Organic Control</p>
-                  <p className="text-slate-600 text-lg leading-relaxed font-medium">{result.advisory?.organic || 'No organic recommendation available.'}</p>
+                  <p className="text-card-text font-bold mb-1 uppercase tracking-widest text-[10px]">Organic Control</p>
+                  <p className="text-card-text-secondary text-lg leading-relaxed font-medium">{result.advisory?.organic || 'No organic recommendation available.'}</p>
                 </div>
               </div>
 
               <div className="flex gap-6 group">
                 <div className="w-12 h-12 rounded-full bg-[#059669] text-white flex items-center justify-center font-black text-xl shrink-0 group-hover:scale-110 transition-transform shadow-lg shadow-[#059669]/20">2</div>
                 <div className="pt-2">
-                  <p className="text-slate-700 font-bold mb-1 uppercase tracking-widest text-[10px]">Chemical Solution</p>
-                  <p className="text-slate-600 text-lg leading-relaxed font-medium">{result.advisory?.chemical || 'No chemical recommendation available.'}</p>
+                  <p className="text-card-text font-bold mb-1 uppercase tracking-widest text-[10px]">Chemical Solution</p>
+                  <p className="text-card-text-secondary text-lg leading-relaxed font-medium">{result.advisory?.chemical || 'No chemical recommendation available.'}</p>
                 </div>
               </div>
 
               <div className="flex gap-6 group">
                 <div className="w-12 h-12 rounded-full bg-[#059669] text-white flex items-center justify-center font-black text-xl shrink-0 group-hover:scale-110 transition-transform shadow-lg shadow-[#059669]/20">3</div>
                 <div className="pt-2">
-                  <p className="text-slate-700 font-bold mb-1 uppercase tracking-widest text-[10px]">Prevention</p>
-                  <p className="text-slate-600 text-lg leading-relaxed font-medium">{result.advisory?.preventive || 'No preventive recommendation available.'}</p>
+                  <p className="text-card-text font-bold mb-1 uppercase tracking-widest text-[10px]">Prevention</p>
+                  <p className="text-card-text-secondary text-lg leading-relaxed font-medium">{result.advisory?.preventive || 'No preventive recommendation available.'}</p>
                 </div>
               </div>
             </div>
@@ -257,7 +257,7 @@ export default function DetectionResult({ previewUrl, isDetecting, result, error
           <div className="flex justify-center pt-10">
             <button 
               onClick={onReset}
-              className="px-16 py-5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-3xl font-black text-white transition-all hover:scale-105"
+              className="px-16 py-5 bg-panel-bg border border-panel-border hover:opacity-80 rounded-3xl font-black text-text-primary transition-all hover:scale-105"
             >
               Scan Another Plant
             </button>
