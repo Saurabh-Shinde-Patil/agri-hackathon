@@ -54,27 +54,36 @@ export default function DetectionResult({ previewUrl, isDetecting, result, error
       {result && !isDetecting && (
         <div className="bg-black/20 p-6 rounded-md border border-panel-border">
           <div className="text-2xl font-semibold text-primary-color mb-4 flex items-center gap-2 capitalize">
-            {result.disease_name.toLowerCase().includes('healthy') ? (
+            {result.disease.toLowerCase().includes('healthy') ? (
               <CheckCircle2 className="text-primary-color" />
             ) : (
               <AlertCircle className="text-yellow-500" />
             )}
-            {result.disease_name}
+            {result.disease}
           </div>
           
           <div className="flex flex-col gap-2">
             <div className="flex justify-between text-sm">
-              <span className={`font-semibold ${getTrustLabel(result.confidence_score).color}`}>
-                {getTrustLabel(result.confidence_score).label}
+              <span className={`font-semibold ${getTrustLabel(parseFloat(result.confidence)).color}`}>
+                {getTrustLabel(parseFloat(result.confidence)).label}
               </span>
-              <span className="text-text-secondary">{(result.confidence_score * 100).toFixed(1)}%</span>
+              <span className="text-text-secondary">{(parseFloat(result.confidence) * 100).toFixed(1)}%</span>
             </div>
             <div className="w-full h-2 bg-panel-border rounded-full overflow-hidden">
               <div 
                 className={`h-full transition-all duration-1000 ease-out bg-gradient-to-r from-primary-color to-accent-color`} 
-                style={{ width: `${result.confidence_score * 100}%` }}
+                style={{ width: `${parseFloat(result.confidence) * 100}%` }}
               ></div>
             </div>
+          </div>
+
+          <div className="mt-4 flex gap-3 text-xs font-semibold">
+            <span className="bg-primary-color/10 text-primary-color px-2 py-1 rounded-md border border-primary-color/20 tracking-wider uppercase">
+              Mode: {result.mode || 'model'}
+            </span>
+            <span className="bg-accent-color/10 text-accent-color px-2 py-1 rounded-md border border-accent-color/20 tracking-wider uppercase">
+              Source: {result.source || 'model'}
+            </span>
           </div>
 
           {/* New Startup-Ready Suggestions Section */}
@@ -100,7 +109,7 @@ export default function DetectionResult({ previewUrl, isDetecting, result, error
               <span className="text-sm">Startup Recommendation</span>
             </div>
             <p className="text-sm text-text-secondary leading-relaxed">
-              {GET_TIPS(result.disease_name)}
+              {GET_TIPS(result.disease)}
             </p>
           </div>
         </div>

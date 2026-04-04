@@ -17,7 +17,7 @@ export default function Home() {
     setError(null)
   }
 
-  const handleDetect = async () => {
+  const handleDetect = async (mode) => {
     if (!selectedImage) return
 
     setIsDetecting(true)
@@ -25,6 +25,7 @@ export default function Home() {
 
     const formData = new FormData()
     formData.append('image', selectedImage)
+    formData.append('mode', mode)
 
     try {
       // Use configured API instance

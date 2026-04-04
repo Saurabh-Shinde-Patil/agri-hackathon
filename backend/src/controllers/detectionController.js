@@ -9,9 +9,12 @@ const detectDisease = async (req, res) => {
             return res.status(400).json({ error: 'No image uploaded. Please provide an image file.' });
         }
 
-        // Prepare the file payload to send to the AI service
+        // Prepare the file payload and mode to send to the AI service
         const formData = new FormData();
         formData.append('image', fs.createReadStream(req.file.path), req.file.originalname);
+        
+        let mode = req.body.mode || 'model';
+        formData.append('mode', mode);
 
         console.log(`Forwarding image to AI Service at ${config.AI_SERVICE_URL}`);
         
