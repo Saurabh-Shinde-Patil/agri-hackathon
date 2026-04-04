@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Camera, Settings, UploadCloud, CheckCircle2, RefreshCw } from 'lucide-react'
 import ImageUploader from '../components/ImageUploader'
 import DetectionResult from '../components/DetectionResult'
 import api from '../config/api'
@@ -9,6 +10,7 @@ export default function Home() {
   const [isDetecting, setIsDetecting] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
+  const [mode, setMode] = useState('api')
 
   const handleImageSelect = (file) => {
     setSelectedImage(file)
@@ -17,24 +19,21 @@ export default function Home() {
     setError(null)
   }
 
-  const handleDetect = async (mode) => {
+  const handleDetect = async (overrideMode) => {
     if (!selectedImage) return
+    const useMode = overrideMode || mode
 
     setIsDetecting(true)
     setError(null)
 
     const formData = new FormData()
     formData.append('image', selectedImage)
-    formData.append('mode', mode)
+    formData.append('mode', useMode)
 
     try {
-      // Use configured API instance
       const response = await api.post('/detect', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+        headers: { 'Content-Type': 'multipart/form-data' }
       })
-      
       setResult(response.data)
     } catch (err) {
       console.error(err)
@@ -44,21 +43,96 @@ export default function Home() {
     }
   }
 
+  const handleReset = () => {
+    setSelectedImage(null)
+    setPreviewUrl(null)
+    setResult(null)
+    setError(null)
+  }
+
   return (
-    <main className="grid grid-cols-1 md:grid-cols-2 gap-8 flex-1">
-      <ImageUploader 
-        onImageSelect={handleImageSelect}
-        onDetect={handleDetect}
-        isDetecting={isDetecting}
-        hasImage={!!selectedImage}
-      />
-      
-      <DetectionResult 
-        previewUrl={previewUrl}
-        isDetecting={isDetecting}
-        result={result}
-        error={error}
-      />
+    <main className="w-full h-full flex flex-col">
+      {!result && !isDetecting ? (
+        /* ── Scan Phase: Two-Column Layout ── */
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in w-full">
+          <ImageUploader 
+            onImageSelect={handleImageSelect}
+            onDetect={handleDetect}
+            isDetecting={isDetecting}
+            hasImage={!!selectedImage}
+            previewUrl={previewUrl}
+            mode={mode}
+            setMode={setMode}
+          />
+          
+          <DetectionResult 
+            previewUrl={previewUrl}
+            isDetecting={isDetecting}
+            result={result}
+            error={error}
+          />
+        </div>
+      ) : isDetecting && !result ? (
+        /* ── Loading Phase: Full Width Diagnostic Animation ── */
+        <div className="w-full animate-fade-in">
+          <DetectionResult 
+            previewUrl={previewUrl}
+            isDetecting={isDetecting}
+            result={result}
+            error={error}
+          />
+        </div>
+      ) : (
+        /* ── Result Phase: Full Width with Persistent Mode Controls ── */
+        <div className="w-full animate-fade-in space-y-6">
+          {/* Persistent Mode Selector Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-xl">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Settings size={16} className="text-primary-color" />
+                <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">Inference Mode</span>
+              </div>
+              <div className="flex gap-1 p-1 bg-black/30 rounded-xl border border-panel-border">
+                {['model', 'api', 'hybrid'].map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setMode(m)}
+                    className={`py-1.5 px-4 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${mode === m ? 'bg-primary-color text-white shadow-lg' : 'text-text-secondary hover:text-white'}`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => handleDetect(mode)}
+                disabled={isDetecting}
+                className="flex items-center gap-2 px-5 py-2 bg-[#059669] hover:bg-[#047857] text-white rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#059669]/20 disabled:opacity-50"
+              >
+                <RefreshCw size={16} className={isDetecting ? 'animate-spin' : ''} />
+                Re-Analyze
+              </button>
+              <button 
+                onClick={handleReset}
+                className="flex items-center gap-2 px-5 py-2 bg-white/5 border border-white/10 text-white rounded-xl font-bold text-sm transition-all hover:bg-white/10"
+              >
+                <UploadCloud size={16} />
+                New Image
+              </button>
+            </div>
+          </div>
+
+          <DetectionResult 
+            previewUrl={previewUrl}
+            isDetecting={isDetecting}
+            result={result}
+            error={error}
+            onReset={handleReset}
+          />
+        </div>
+      )}
     </main>
   )
 }

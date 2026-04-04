@@ -25,11 +25,18 @@ class APIPlugin(BaseDetectionPlugin):
         self.model_name = "gemini-2.5-flash"
 
     def predict(self, image: Image.Image) -> Dict[str, Any]:
+        default_advisory = {
+            "organic": "Consult a local agricultural expert for organic treatments.",
+            "chemical": "Use standard approved fungicides or pesticides after careful verification.",
+            "preventive": "Ensure proper spacing, good drainage, and remove infected crop debris."
+        }
+        
         if not self.api_key:
             return {
                 "disease_name": "API Key Missing (Mock Result)",
                 "confidence_score": 0.88,
-                "suggestions": [{"name": "Provide actual key", "confidence": 1.0}]
+                "suggestions": [{"name": "Provide actual key", "confidence": 1.0}],
+                "advisory": default_advisory
             }
             
         try:
@@ -47,7 +54,7 @@ class APIPlugin(BaseDetectionPlugin):
                     {
                         "parts": [
                             {
-                                "text": 'Analyze this plant leaf. If there is a disease, what is it? If it is healthy, state "Healthy". Respond in strict JSON format ONLY without markdown formatting: {"disease_name": "...", "confidence_score": 0.95}'
+                                "text": 'Analyze this plant leaf. Identify the plant and the disease (if any). If it is healthy, state "Healthy". Also provide a detailed Integrated Pest Management (IPM) analysis including organic, chemical, and preventive measures. Respond in strict JSON format ONLY without markdown: {"plant_name": "...", "disease_name": "...", "confidence_score": 0.95, "description": "...", "symptoms": "...", "causes": "...", "how_it_spreads": "...", "core_recommendation": "...", "advisory": {"organic": "...", "chemical": "...", "preventive": "..."}}'
                             },
                             {
                                 "inline_data": {
@@ -60,11 +67,15 @@ class APIPlugin(BaseDetectionPlugin):
                 ],
                 "generationConfig": {
                     "temperature": 0.2,
-                    "maxOutputTokens": 1024,
+                    "maxOutputTokens": 1500,
                     "responseMimeType": "application/json",
                     "responseSchema": {
                         "type": "object",
                         "properties": {
+                            "plant_name": {
+                                "type": "string",
+                                "description": "Common name of the plant identified."
+                            },
                             "disease_name": {
                                 "type": "string",
                                 "description": "Name of the plant disease, or 'Healthy' if healthy."
@@ -72,9 +83,37 @@ class APIPlugin(BaseDetectionPlugin):
                             "confidence_score": {
                                 "type": "number",
                                 "description": "Confidence score between 0.0 and 1.0"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Brief description of the disease/condition."
+                            },
+                            "symptoms": {
+                                "type": "string",
+                                "description": "Key visual markers of this condition."
+                            },
+                            "causes": {
+                                "type": "string",
+                                "description": "Environmental or biological triggers."
+                            },
+                            "how_it_spreads": {
+                                "type": "string",
+                                "description": "Modes of transmission (wind, water, pests)."
+                            },
+                            "core_recommendation": {
+                                "type": "string",
+                                "description": "Priority one-line expert action."
+                            },
+                            "advisory": {
+                                "type": "object",
+                                "properties": {
+                                    "organic": {"type": "string"},
+                                    "chemical": {"type": "string"},
+                                    "preventive": {"type": "string"}
+                                }
                             }
                         },
-                        "required": ["disease_name", "confidence_score"]
+                        "required": ["plant_name", "disease_name", "confidence_score", "description", "symptoms", "causes", "how_it_spreads", "core_recommendation", "advisory"]
                     }
                 }
             }
@@ -94,11 +133,11 @@ class APIPlugin(BaseDetectionPlugin):
             # Check for candidates
             if not result_json.get("candidates") or len(result_json["candidates"]) == 0:
                 error_msg = result_json.get("error", {}).get("message", "No candidates returned (Safety Blocked).")
-                return {"disease_name": f"API Error: {error_msg}", "confidence_score": 0.0, "suggestions": []}
+                return {"disease_name": f"API Error: {error_msg}", "confidence_score": 0.0, "suggestions": [], "advisory": default_advisory}
 
             candidate = result_json["candidates"][0]
             if "content" not in candidate:
-                return {"disease_name": "API Error: Safety Filter Blocked Response", "confidence_score": 0.0, "suggestions": []}
+                return {"disease_name": "API Error: Safety Filter Blocked Response", "confidence_score": 0.0, "suggestions": [], "advisory": default_advisory}
 
             content = candidate["content"]["parts"][0]["text"].strip()
             
@@ -113,6 +152,7 @@ class APIPlugin(BaseDetectionPlugin):
             # Fallback values
             d_name = "Analysis Complete (See Details)"
             c_score = 0.80
+            advisory = default_advisory
 
             try:
                 # Find the first { and last }
@@ -125,39 +165,109 @@ class APIPlugin(BaseDetectionPlugin):
                     
                     # Account for capitalization variations
                     d_name = parsed.get("disease_name", parsed.get("Disease_name", parsed.get("disease", "Unknown Disease")))
+                    p_name = parsed.get("plant_name", "Leaf Content")
                     c_score = float(parsed.get("confidence_score", parsed.get("Confidence_score", parsed.get("confidence", 0.80))))
+                    advisory = parsed.get("advisory", default_advisory)
+                    
+                    return {
+                        "plant_name": p_name,
+                        "disease_name": d_name,
+                        "confidence_score": min(max(c_score, 0.0), 1.0),
+                        "description": parsed.get("description", "Analysis processed."),
+                        "symptoms": parsed.get("symptoms", "Check visual markers."),
+                        "causes": parsed.get("causes", "Environmental factors."),
+                        "how_it_spreads": parsed.get("how_it_spreads", "Contact or airborne."),
+                        "core_recommendation": parsed.get("core_recommendation", "Consult an expert."),
+                        "suggestions": [],
+                        "advisory": advisory
+                    }
                 else:
-                    raise json.JSONDecodeError("No JSON brackets found", content, 0)
-            except Exception:
-                # Failsafe regex extraction if JSON is malformed
-                d_match = re.search(r'"(?:disease|Disease|disease_name|name|prediction|class)"\s*:\s*"([^"]+)"', content, re.IGNORECASE)
-                if d_match:
-                    d_name = d_match.group(1)
-                else:
-                    # Just grab the first quoted string as a highly loose fallback
-                    any_str = re.search(r'"([^"]+)"', content)
-                    if any_str and len(any_str.group(1)) > 3 and not any_str.group(1).replace(".", "").isdigit():
-                        d_name = any_str.group(1).title()
-
-                c_match = re.search(r'"(?:confidence_score|confidence|score|prob|probability)"\s*:\s*([\d\.]+)', content, re.IGNORECASE)
-                if c_match:
-                    c_score = float(c_match.group(1))
-                else:
-                    # Look for any naked decimal number
-                    any_num = re.search(r'0\.[\d]+', content)
-                    if any_num:
-                        c_score = float(any_num.group(0))
-
-            return {
-                "disease_name": d_name,
-                "confidence_score": min(max(c_score, 0.0), 1.0),
-                "suggestions": []
-            }
+                    return {
+                        "disease_name": "API Error: No JSON found",
+                        "confidence_score": 0.0,
+                        "suggestions": [],
+                        "advisory": default_advisory
+                    }
+            except Exception as e:
+                print(f"INNER ERROR parsing Gemini JSON: {e}")
+                return {
+                    "disease_name": d_name,
+                    "confidence_score": c_score,
+                    "suggestions": [],
+                    "advisory": advisory
+                }
 
         except Exception as e:
             print(f"ERROR in API plugin: {e}")
             return {
                 "disease_name": f"System Error: {str(e)}",
                 "confidence_score": 0.0,
-                "suggestions": []
+                "suggestions": [],
+                "advisory": default_advisory
             }
+
+    def get_advisory(self, disease_name: str) -> Dict[str, str]:
+        """Dynamically generate full IPM advisory for a specific disease using Gemini."""
+        default_resp = {
+            "plant_name": "Detected Plant",
+            "description": "Information processing...",
+            "symptoms": "Check for visual changes.",
+            "causes": "Environmental factors.",
+            "how_it_spreads": "Contact or air.",
+            "core_recommendation": "Consult local expert.",
+            "organic": "Standard organic treatment.",
+            "chemical": "Approved fungicide/pesticide.",
+            "preventive": "Good farm hygiene."
+        }
+        
+        if not self.api_key or disease_name in ["Unknown", "No detection", "Analysis Complete (See Details)", "Unknown Disease"]:
+            return default_resp
+            
+        try:
+            headers = {"Content-Type": "application/json"}
+            payload = {
+                "contents": [{"parts": [{"text": f'Provide Integrated Pest Management advisory for the plant condition: "{disease_name}". Respond ONLY with valid JSON: {{"plant_name": "...", "description": "...", "symptoms": "...", "causes": "...", "how_it_spreads": "...", "core_recommendation": "...", "advisory": {{"organic": "...", "chemical": "...", "preventive": "..."}}}}'}]}],
+                "generationConfig": {
+                    "temperature": 0.2,
+                    "maxOutputTokens": 1000,
+                    "responseMimeType": "application/json",
+                    "responseSchema": {
+                        "type": "object",
+                        "properties": {
+                            "plant_name": {"type": "string"},
+                            "description": {"type": "string"},
+                            "symptoms": {"type": "string"},
+                            "causes": {"type": "string"},
+                            "how_it_spreads": {"type": "string"},
+                            "core_recommendation": {"type": "string"},
+                            "advisory": {
+                                "type": "object",
+                                "properties": {
+                                    "organic": {"type": "string"},
+                                    "chemical": {"type": "string"},
+                                    "preventive": {"type": "string"}
+                                }
+                            }
+                        },
+                        "required": ["plant_name", "description", "symptoms", "causes", "how_it_spreads", "core_recommendation", "advisory"]
+                    }
+                }
+            }
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
+            response = requests.post(url, headers=headers, json=payload, timeout=15)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "candidates" in data and len(data["candidates"]) > 0:
+                    content = data["candidates"][0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
+                    if content:
+                        parsed = json.loads(content)
+                        # Flatten for easy endpoint access
+                        resp = parsed
+                        return resp
+        except Exception as e:
+            print(f"ERROR getting advisory from Gemini: {e}")
+            
+        return default_resp
+
+
