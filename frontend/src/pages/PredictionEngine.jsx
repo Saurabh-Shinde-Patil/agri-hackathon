@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import api from '../config/api'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 
 // ─── Crop Options ──────────────────────────────────────────────
 const CROP_OPTIONS = [
@@ -111,6 +112,7 @@ function RankedThreatCard({ threat, color }) {
 
 export default function PredictionEngine() {
   const { activeFarmId } = useAuth();
+  const { language, t } = useLanguage();
   
   // ── Form State ──
   const [temperature, setTemperature] = useState('')
@@ -204,6 +206,7 @@ export default function PredictionEngine() {
         temperature: temperature !== '' ? parseFloat(temperature) : null,
         humidity: humidity !== '' ? parseFloat(humidity) : null,
         rainfall: rainfall !== '' ? parseFloat(rainfall) : null,
+        language: language
       }
 
       const response = await api.post('/predict', payload)
@@ -440,7 +443,7 @@ export default function PredictionEngine() {
           <div className="glass-panel p-8 rounded-3xl border border-white/10 bg-white/5">
             <div className="flex items-center gap-3 text-red-400 mb-6 uppercase tracking-widest font-black text-xs">
               <Bug size={20} />
-              Ranked Disease & Pest Threats
+              {t('predict.ranked_threats') || 'Ranked Disease & Pest Threats'}
             </div>
             <div className="flex flex-col">
               {result.pest_threats.map((threat, idx) => (
@@ -454,7 +457,7 @@ export default function PredictionEngine() {
         <div className="glass-panel p-8 rounded-3xl border border-white/10 bg-white/5">
           <div className="flex items-center gap-3 text-primary-color mb-6 uppercase tracking-widest font-black text-xs">
             <Info size={18} />
-            Analysis Reasoning
+            {t('predict.reason') || 'Analysis Reasoning'}
           </div>
           <p className="text-lg text-text-secondary leading-relaxed font-light italic border-l-4 border-primary-color/30 pl-6">
             "{result.reason || 'No detailed reason available.'}"
@@ -466,7 +469,7 @@ export default function PredictionEngine() {
           <div className="bg-card-bg p-10 rounded-[40px] shadow-2xl shadow-black/20 border border-card-border">
             <div className="flex items-center gap-3 text-[#059669] font-black mb-10 pb-6 border-b border-card-border">
               <Shield size={28} />
-              <h3 className="text-3xl tracking-tight">Integrated Pest Management Plan</h3>
+              <h3 className="text-3xl tracking-tight">{t('predict.ipm_plan') || 'Integrated Pest Management Plan'}</h3>
             </div>
 
             <div className="space-y-8">

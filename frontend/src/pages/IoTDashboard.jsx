@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 import { 
   Thermometer, Droplets, CloudRain, Sprout, Layers, CalendarDays,
   Target, Activity, AlertTriangle, CheckCircle2, Shield, Bug, 
@@ -113,7 +114,8 @@ function RankedThreatCard({ threat, color }) {
 
 
 export default function IoTDashboard() { 
-const { activeFarmId } = useAuth(); 
+  const { activeFarmId } = useAuth(); 
+  const { language } = useLanguage();
   const [telemetry, setTelemetry] = useState(null)
   const [isFetching, setIsFetching] = useState(false)
   const [fetchError, setFetchError] = useState(null)
@@ -186,7 +188,7 @@ const { activeFarmId } = useAuth();
         }
       }
 
-      const response = await api.post('/predict', { ...payload, farm_id: activeFarmId })
+      const response = await api.post('/predict', { ...payload, farm_id: activeFarmId, language })
       setResult(response.data)
     } catch (err) {
       console.error(err)

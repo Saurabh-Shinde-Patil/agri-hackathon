@@ -4,6 +4,7 @@ import ImageUploader from '../components/ImageUploader'
 import DetectionResult from '../components/DetectionResult'
 import api from '../config/api'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 
 export default function Home() { const { activeFarmId } = useAuth(); 
   const [selectedImage, setSelectedImage] = useState(null)
@@ -33,6 +34,7 @@ export default function Home() { const { activeFarmId } = useAuth();
     formData.append('mode', useMode)
     formData.append('ai_provider', aiProvider)
     formData.append('farm_id', activeFarmId)
+    formData.append('language', language)
 
     try {
       const response = await api.post('/detect', formData, {

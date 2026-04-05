@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "iot_sensors": "IoT Sensors",
+    "plantscan": "PlantScan",
+    "prediction_engine": "Prediction Engine",
+    "admin_hub": "Admin Hub"
+  },
+  "sensors": {
+    "temperature": "Temperature",
+    "humidity": "Humidity",
+    "soil_moisture": "Soil Moisture",
+    "light": "Light",
+    "rain_status": "Rain Status",
+    "raining": "Raining",
+    "clear": "Clear"
+  },
+  "dashboard": {
+    "weather": "Weather",
+    "location": "Location",
+    "plant_status": "Plant Status",
+    "irrigation": "Irrigation Needed",
+    "disease_detected": "Disease Detected",
+    "no_disease": "No Disease Detected",
+    "run_scan": "Run Plant Scan",
+    "run_prediction": "Run Prediction"
+  },
+  "predict": {
+    "title": "Disease Prediction Engine",
+    "subtitle": "Analyze environmental and crop variables",
+    "run_analysis": "Run Analysis",
+    "risk_level": "Risk Level",
+    "confidence": "Confidence",
+    "reason": "Reason",
+    "suggestion": "Suggestion",
+    "advisory": "Expert Advisory",
+    "crop_type": "Crop Type",
+    "plant_age": "Plant Age (Days)"
+  },
+  "chatbot": {
+    "placeholder": "Ask your farm assistant..."
+  }
+}

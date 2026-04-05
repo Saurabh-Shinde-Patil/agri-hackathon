@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 from ..core.config import settings
 from ..plugins.iot_plugin import IoTPlugin
+from ..plugins.translation_plugin import TranslationPlugin
 
 router = APIRouter()
 
@@ -16,6 +17,7 @@ router = APIRouter()
 model_plugin = YOLOPlugin(model_path=settings.model_path)
 api_plugin = APIPlugin()
 iot_plugin = IoTPlugin()
+translation_plugin = TranslationPlugin()
 
 # Lazy-loaded prediction plugins (loaded on first /predict call)
 _rf_plugin = None
@@ -93,6 +95,7 @@ class PredictionRequest(BaseModel):
     rain_status: Optional[int] = Field(None, description="Rain status from sensor (0 or 1)")
     light_intensity: Optional[float] = Field(None, description="Light intensity from sensor")
     data_sources: Optional[Dict[str, str]] = Field(None, description="Explicit data sources map supplied by frontend")
+    language: str = Field("en", description="Output language (en, hi, mr)")
 
 
 # ═══════════════════════════════════════════════════════════
@@ -215,6 +218,10 @@ async def predict_pest_risk(request: PredictionRequest):
         iot_alerts = iot_plugin.analyze_sensor_data(iot_data_payload)
         result["iot_alerts"] = iot_alerts
 
+        # ── Translate output if necessary ──
+        if request.language != "en":
+            result = translation_plugin.translate(result, request.language)
+
         return result
 
     except HTTPException:
@@ -230,7 +237,8 @@ async def predict_pest_risk(request: PredictionRequest):
 async def detect_disease(
     image: UploadFile = File(...),
     mode: str = Form("model"),
-    ai_provider: str = Form("gemini")
+    ai_provider: str = Form("gemini"),
+    language: str = Form("en")
 ):
     if not image.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File provided is not an image.")
@@ -292,6 +300,10 @@ async def detect_disease(
             "advisory": result_raw.get("advisory", {})
         }
         
+        # ── Translate output if necessary ──
+        if language != "en":
+            final_response = translation_plugin.translate(final_response, language)
+            
         return final_response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

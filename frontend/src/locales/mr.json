@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "dashboard": "डॅशबोर्ड",
+    "iot_sensors": "IoT सेन्सर्स",
+    "plantscan": "वनस्पती स्कॅन",
+    "prediction_engine": "पूर्वानुमान इंजिन",
+    "admin_hub": "अ‍ॅडमिन हब"
+  },
+  "sensors": {
+    "temperature": "तापमान",
+    "humidity": "आर्द्रता",
+    "soil_moisture": "मातीतील ओलावा",
+    "light": "प्रकाश",
+    "rain_status": "पावसाची स्थिती",
+    "raining": "पाऊस पडत आहे",
+    "clear": "स्वच्छ"
+  },
+  "dashboard": {
+    "weather": "हवामान",
+    "location": "स्थान",
+    "plant_status": "वनस्पतींची स्थिती",
+    "irrigation": "सिंचनाची आवश्यकता",
+    "disease_detected": "रोग आढळला",
+    "no_disease": "कोणताही रोग नाही",
+    "run_scan": "स्कॅन करा",
+    "run_prediction": "पूर्वानुमान चालवा"
+  },
+  "predict": {
+    "title": "रोग पूर्वानुमान इंजिन",
+    "subtitle": "पर्यावरण आणि पिकांच्या व्हेरिएबल्सचे विश्लेषण करा",
+    "run_analysis": "विश्लेषण करा",
+    "risk_level": "धोक्याची पातळी",
+    "confidence": "आत्मविश्वास",
+    "reason": "कारण",
+    "suggestion": "सुचना",
+    "advisory": "तज्ञ सल्ला",
+    "crop_type": "पिकाचे प्रकार",
+    "plant_age": "वनस्पतीचे वय (दिवस)"
+  },
+  "chatbot": {
+    "placeholder": "आपल्या कृषी सहाय्यकाला विचारा..."
+  }
+}

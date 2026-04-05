@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "dashboard": "डैशबोर्ड",
+    "iot_sensors": "IoT सेंसर",
+    "plantscan": "पौधा स्कैन",
+    "prediction_engine": "पूर्वानुमान इंजन",
+    "admin_hub": "एडमिन हब"
+  },
+  "sensors": {
+    "temperature": "तापमान",
+    "humidity": "आर्द्रता",
+    "soil_moisture": "मिट्टी की नमी",
+    "light": "रोशनी",
+    "rain_status": "बारिश की स्थिति",
+    "raining": "बारिश हो रही है",
+    "clear": "साफ"
+  },
+  "dashboard": {
+    "weather": "मौसम",
+    "location": "स्थान",
+    "plant_status": "पौधे की स्थिति",
+    "irrigation": "सिंचाई की आवश्यकता",
+    "disease_detected": "बीमारी का पता चला",
+    "no_disease": "कोई बीमारी नहीं",
+    "run_scan": "स्कैन करें",
+    "run_prediction": "पूर्वानुमान चलाएं"
+  },
+  "predict": {
+    "title": "रोग पूर्वानुमान इंजन",
+    "subtitle": "पर्यावरण और फसल चरों का विश्लेषण करें",
+    "run_analysis": "विश्लेषण करें",
+    "risk_level": "जोखिम स्तर",
+    "confidence": "आत्मविश्वास",
+    "reason": "कारण",
+    "suggestion": "सुझाव",
+    "advisory": "विशेषज्ञ सलाह",
+    "crop_type": "फसल का प्रकार",
+    "plant_age": "पौधे की आयु (दिन)"
+  },
+  "chatbot": {
+    "placeholder": "अपने कृषि सहायक से पूछें..."
+  }
+}

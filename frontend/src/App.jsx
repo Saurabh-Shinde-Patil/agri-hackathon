@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Sun, Moon, Activity, Camera, Radio, LayoutDashboard, LogOut, Settings, Tractor } from 'lucide-react'
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
+import { useLanguage } from './context/LanguageContext'
+import { Globe } from 'lucide-react'
 
 import Dashboard from './pages/Dashboard'
 import Home from './pages/Home'
@@ -24,6 +26,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
 // Layout Component with Navigation
 const AppLayout = ({ children }) => {
   const { user, logout, activeFarmId } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -39,14 +42,14 @@ const AppLayout = ({ children }) => {
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark')
 
   const tabs = [
-    { path: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> },
-    { path: '/iot', label: 'IoT Sensors', icon: <Radio size={16} /> },
-    { path: '/plantscan', label: 'PlantScan', icon: <Camera size={16} /> },
-    { path: '/prediction', label: 'Prediction Engine', icon: <Activity size={16} /> }
+    { path: '/dashboard', label: t('nav.dashboard'), icon: <LayoutDashboard size={16} /> },
+    { path: '/iot', label: t('nav.iot_sensors'), icon: <Radio size={16} /> },
+    { path: '/plantscan', label: t('nav.plantscan'), icon: <Camera size={16} /> },
+    { path: '/prediction', label: t('nav.prediction_engine'), icon: <Activity size={16} /> }
   ]
 
   if (user?.role === 'admin') {
-    tabs.push({ path: '/admin', label: 'Admin Hub', icon: <Settings size={16} /> });
+    tabs.push({ path: '/admin', label: t('nav.admin_hub'), icon: <Settings size={16} /> });
   }
 
   const handleLogout = () => {
@@ -71,6 +74,21 @@ const AppLayout = ({ children }) => {
                <span className="text-sm font-black text-white">{activeFarmId ? `Farm [${activeFarmId.substring(0,6)}]` : 'No Farm Selected'}</span>
              </div>
              <button onClick={() => navigate('/farms')} className="ml-2 text-[10px] bg-primary-color px-2 py-1 rounded-md text-white font-bold tracking-widest hover:bg-emerald-500 uppercase">Change</button>
+          </div>
+
+          <div className="relative group">
+             <div className="bg-panel-bg/40 border border-white/20 backdrop-blur-xl px-4 py-2.5 rounded-2xl flex items-center gap-3 cursor-pointer hover:bg-white/10 transition-all text-white shadow-[0_0_15px_rgba(16,185,129,0.15)] group-hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                <Globe size={18} className="text-primary-color group-hover:animate-pulse" />
+                <select 
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="bg-transparent text-sm font-black uppercase tracking-[0.1em] outline-none cursor-pointer appearance-none text-white pr-2"
+                >
+                  <option value="en" className="text-black bg-white">English (EN)</option>
+                  <option value="hi" className="text-black bg-white">हिंदी (HI)</option>
+                  <option value="mr" className="text-black bg-white">मराठी (MR)</option>
+                </select>
+             </div>
           </div>
 
           <button

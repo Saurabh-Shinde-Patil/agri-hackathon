@@ -8,6 +8,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import api from '../config/api'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 
 // ─── Sensor Card ────────────────────────────────────────────
 function SensorCard({ icon, label, value, unit, color, isOnline }) {
@@ -73,6 +74,7 @@ function ModuleCard({ icon, title, description, gradient, onClick }) {
 // ═════════════════════════════════════════════════════════════
 export default function Dashboard() {
   const { activeFarmId } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   // IoT State
@@ -164,13 +166,13 @@ export default function Dashboard() {
       <div className="text-center">
         <div className="inline-flex items-center gap-2 bg-primary-color/10 text-primary-color px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-4">
           <Activity size={14} className="animate-pulse" />
-          Smart Farming Dashboard
+          {t('dashboard.banner') || 'Smart Farming Dashboard'}
         </div>
         <h2 className="text-3xl md:text-4xl font-black text-white mb-2 leading-tight">
-          Welcome to <span className="bg-gradient-to-r from-primary-color to-accent-color bg-clip-text text-transparent">AgriShield</span>
+          {t('dashboard.welcome') || 'Welcome to'} <span className="bg-gradient-to-r from-primary-color to-accent-color bg-clip-text text-transparent">AgriShield</span>
         </h2>
         <p className="text-text-secondary text-sm max-w-xl mx-auto">
-          Real-time monitoring, AI-powered diagnostics, and precision pest management — all in one place.
+          {t('dashboard.subtitle') || 'Real-time monitoring, AI-powered diagnostics, and precision pest management — all in one place.'}
         </p>
       </div>
 
@@ -182,18 +184,18 @@ export default function Dashboard() {
               <Cpu size={20} className="text-emerald-400" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-white">IoT Sensor Station</h3>
-              <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">ESP32 Live Telemetry</p>
+              <h3 className="text-lg font-black text-white">{t('dashboard.iot_station') || 'IoT Sensor Station'}</h3>
+              <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">{t('dashboard.live_telemetry') || 'ESP32 Live Telemetry'}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             {isOnline ? (
               <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
-                <Wifi size={12} /> Online
+                <Wifi size={12} /> {t('dashboard.online') || 'Online'}
               </span>
             ) : (
               <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-full">
-                <WifiOff size={12} /> Offline
+                <WifiOff size={12} /> {t('dashboard.offline') || 'Offline'}
               </span>
             )}
             <button onClick={fetchTelemetry} className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all">
@@ -216,11 +218,11 @@ export default function Dashboard() {
           <>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {[
-                { icon: <Thermometer size={22} />, label: 'Temperature', value: telemetry?.temperature, unit: '°C', color: '#ef4444' },
-                { icon: <Droplets size={22} />, label: 'Humidity', value: telemetry?.humidity, unit: '%', color: '#3b82f6' },
+                { icon: <Thermometer size={22} />, label: t('sensors.temperature') || 'Temperature', value: telemetry?.temperature, unit: '°C', color: '#ef4444' },
+                { icon: <Droplets size={22} />, label: t('sensors.humidity') || 'Humidity', value: telemetry?.humidity, unit: '%', color: '#3b82f6' },
                 { 
                   icon: <Layers size={22} />, 
-                  label: 'Soil Moisture', 
+                  label: t('sensors.soil_moisture') || 'Soil Moisture', 
                   value: telemetry?.soil_moisture !== null && telemetry?.soil_moisture !== undefined 
                     ? telemetry.soil_moisture 
                     : 'N/A', 
@@ -229,12 +231,12 @@ export default function Dashboard() {
                 },
                 { 
                   icon: <Sun size={22} />, 
-                  label: 'Light (Brightness)', 
+                  label: t('sensors.light') || 'Light (Brightness)', 
                   value: telemetry?.light_intensity !== null && telemetry?.light_intensity !== undefined ? telemetry.light_intensity : 'N/A', 
                   unit: telemetry?.light_intensity !== null && telemetry?.light_intensity !== undefined ? 'Lux' : '', 
                   color: '#eab308'
                 },
-                { icon: <CloudRain size={22} />, label: 'Rain Status', value: telemetry?.rain_status ? 'YES' : 'NO', unit: '', color: telemetry?.rain_status ? '#06b6d4' : '#6b7280' },
+                { icon: <CloudRain size={22} />, label: t('sensors.rain_status') || 'Rain Status', value: telemetry?.rain_status ? (t('dashboard.yes') || 'YES') : (t('dashboard.no') || 'NO'), unit: '', color: telemetry?.rain_status ? '#06b6d4' : '#6b7280' },
               ].map(({ icon, label, value, unit, color }) => (
                 <div key={label} className="relative group bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col items-center text-center hover:border-white/20 hover:bg-white/[0.07] transition-all duration-300 overflow-hidden">
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `radial-gradient(circle at 50% 0%, ${color}15, transparent 70%)` }}></div>
