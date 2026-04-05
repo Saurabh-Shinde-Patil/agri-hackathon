@@ -9,9 +9,7 @@ function App() {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('agrishield-theme') || 'dark'
   })
-  const [activeTab, setActiveTab] = useState(() => {
-    return localStorage.getItem('agrishield-tab') || 'dashboard'
-  })
+  const [activeTab, setActiveTab] = useState('dashboard')
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)

@@ -1,7 +1,11 @@
 const db = require('../config/db');
 
 const postIotData = (req, res) => {
-    const { temperature, humidity, soil_moisture, rain_status, light_intensity } = req.body;
+    const temperature = req.body.temperature;
+    const humidity = req.body.humidity;
+    const soil_moisture = req.body.soil_moisture ?? req.body.soilMoisture;
+    const rain_status = req.body.rain_status ?? req.body.rainStatus;
+    const light_intensity = req.body.light_intensity ?? req.body.lightIntensity;
 
     // Optional lightweight validation
     if (temperature === undefined && humidity === undefined) {

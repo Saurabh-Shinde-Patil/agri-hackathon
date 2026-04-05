@@ -130,13 +130,14 @@ export default function IoTDashboard() {
 
   const fetchTelemetry = async () => {
     setIsFetching(true)
-    setFetchError(null)
+    // We don't reset fetchError here to avoid UI flicker if previously failed
     try {
       const response = await api.get('/iot-data/latest')
       setTelemetry(response.data)
+      setFetchError(null) // Clear error on success
     } catch (err) {
       console.error(err)
-      setFetchError('Failed to fetch latest IoT data. Is the hardware connected?')
+      setFetchError('Hardware unreachable. Displaying last known data.')
     } finally {
       setIsFetching(false)
     }
@@ -486,6 +487,7 @@ export default function IoTDashboard() {
                 { label: 'Temp', key: 'temperature', value: result.inputs.temperature ? `${result.inputs.temperature}°C` : 'N/A', icon: <Thermometer size={14} /> },
                 { label: 'Humidity', key: 'humidity', value: result.inputs.humidity ? `${result.inputs.humidity}%` : 'N/A', icon: <Droplets size={14} /> },
                 { label: 'Soil', key: 'soil_moisture', value: result.inputs.soil_moisture ? `${result.inputs.soil_moisture}%` : 'N/A', icon: <Layers size={14} /> },
+                { label: 'Light', key: 'light_intensity', value: result.inputs.light_intensity !== undefined ? `${result.inputs.light_intensity}%` : 'N/A', icon: <Sun size={14} /> },
                 { label: 'Rain', key: 'rainfall', value: result.inputs.rainfall !== undefined ? `${result.inputs.rainfall}mm` : 'N/A', icon: <CloudRain size={14} /> },
                 { label: 'Crop', key: 'crop_type', value: result.inputs.crop_type, icon: <Sprout size={14} /> },
                 { label: 'Age', key: 'plant_age_days', value: `${result.inputs.plant_age_days}d`, icon: <CalendarDays size={14} /> },
@@ -532,23 +534,32 @@ export default function IoTDashboard() {
               <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">ESP32 Live Telemetry</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            {telemetry && !fetchError ? (
-              <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
-                <Wifi size={12} /> Online
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-full">
-                <WifiOff size={12} /> Offline
-              </span>
-            )}
+        <div className="flex items-center gap-3">
+            {(() => {
+              // Check if ESP32 is truly online: data exists, no fetch error, and data is fresh (< 60s old)
+              let isOnline = !!telemetry && !fetchError
+              if (isOnline && telemetry?.timestamp) {
+                const lastUpdate = new Date(telemetry.timestamp.replace(' ', 'T') + 'Z')
+                const ageSeconds = (Date.now() - lastUpdate.getTime()) / 1000
+                if (ageSeconds > 60) isOnline = false
+              }
+              return isOnline ? (
+                <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+                  <Wifi size={12} /> Online
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-full">
+                  <WifiOff size={12} /> Offline
+                </span>
+              )
+            })()}
             <button onClick={fetchTelemetry} className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all">
               <RefreshCw size={14} className={`text-text-secondary ${isFetching ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
 
-        {fetchError ? (
+        {fetchError && !telemetry ? (
           <div className="bg-red-500/10 text-red-400 p-5 rounded-2xl flex items-center gap-3 font-semibold border border-red-500/20 text-sm">
             <AlertTriangle size={18} /> {fetchError}
           </div>
@@ -564,16 +575,30 @@ export default function IoTDashboard() {
               {[
                 { icon: <Thermometer size={22} />, label: 'Temperature', value: telemetry.temperature, unit: '°C', color: '#ef4444' },
                 { icon: <Droplets size={22} />, label: 'Humidity', value: telemetry.humidity, unit: '%', color: '#3b82f6' },
-                { icon: <Layers size={22} />, label: 'Soil Moisture', value: telemetry.soil_moisture, unit: '%', color: '#f59e0b' },
-                { icon: <Sun size={22} />, label: 'Light Intensity', value: telemetry.light_intensity || 'N/A', unit: telemetry.light_intensity ? ' lux' : '', color: '#eab308' },
+                { 
+                  icon: <Layers size={22} />, 
+                  label: 'Soil Moisture', 
+                  value: telemetry.soil_moisture !== null && telemetry.soil_moisture !== undefined 
+                    ? telemetry.soil_moisture 
+                    : 'N/A', 
+                  unit: '%', 
+                  color: '#f59e0b' 
+                },
+                { 
+                  icon: <Sun size={22} />, 
+                  label: 'Light (Brightness)', 
+                  value: telemetry.light_intensity !== null && telemetry.light_intensity !== undefined ? telemetry.light_intensity : 'N/A', 
+                  unit: telemetry.light_intensity !== null && telemetry.light_intensity !== undefined ? 'Lux' : '', 
+                  color: '#eab308'
+                },
                 { icon: <CloudRain size={22} />, label: 'Rain Status', value: telemetry.rain_status ? 'YES' : 'NO', unit: '', color: telemetry.rain_status ? '#06b6d4' : '#6b7280' },
-              ].map(({ icon, label, value, unit, color }) => (
+              ].map(({ icon, label, value, unit, color, subLabel }) => (
                 <div key={label} className="relative group bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col items-center text-center hover:border-white/20 hover:bg-white/[0.07] transition-all duration-300 overflow-hidden">
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `radial-gradient(circle at 50% 0%, ${color}15, transparent 70%)` }}></div>
                   <div className="relative z-10 w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: `${color}15`, color }}>
                     {icon}
                   </div>
-                  <p className="relative z-10 text-[9px] uppercase tracking-[0.2em] text-text-secondary font-black mb-1.5">{label}</p>
+                  <p className="relative z-10 text-[9px] uppercase tracking-[0.2em] text-text-secondary font-black mb-1.5">{label} {subLabel && `(${subLabel})`}</p>
                   <p className="relative z-10 text-2xl font-black text-white">
                     {value !== null && value !== undefined ? value : '—'}
                     {unit && value !== null && value !== undefined && <span className="text-sm font-medium text-text-secondary ml-0.5">{unit}</span>}
@@ -585,8 +610,14 @@ export default function IoTDashboard() {
               ))}
             </div>
             {telemetry.timestamp && (
-              <p className="text-[10px] text-text-secondary text-right mt-3 font-medium">
-                Last updated: {new Date(telemetry.timestamp.replace(' ', 'T') + 'Z').toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'medium' })}
+              <p className="text-[10px] text-text-secondary text-right mt-3 font-medium flex items-center justify-end gap-1.5 uppercase tracking-widest">
+                <RefreshCw size={10} className={isFetching ? 'animate-spin' : ''} />
+                Last updated: {(() => {
+                  const d = new Date(telemetry.timestamp.replace(' ', 'T') + 'Z');
+                  const dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+                  const timeStr = d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
+                  return `${dateStr} / ${timeStr}`;
+                })()}
               </p>
             )}
           </>

@@ -30,8 +30,8 @@ class IoTPlugin:
         if rain_status == 1:
             alerts.append("🌧️ Rain Detected. High risk of disease spread. Avoid applying water-soluble chemical treatments until foliage dries.")
             
-        if light is not None and light < 200:
-            alerts.append(f"🌑 Low Light Intensity ({light}). Plant photosynthesis might drop. Consider supplemental lighting if this persists.")
+        if light is not None and light < 20: # 20% brightness
+            alerts.append(f"🌑 Low Light Intensity ({light}%). Plant photosynthesis might drop. Consider supplemental lighting if this persists.")
             
         if not alerts:
             alerts.append("✅ All sensor readings are within optimal ranges. Crop health is stable.")

@@ -127,7 +127,7 @@ class RFPredictionPlugin(BasePredictionPlugin):
         rainfalls = np.random.uniform(0, 50, n_samples)
         soil_moistures = np.random.uniform(10, 100, n_samples)
         plant_ages = np.random.randint(1, 180, n_samples)
-        light_intensities = np.random.uniform(200, 1200, n_samples)
+        light_intensities = np.random.uniform(0, 100, n_samples) # 0-100% brightness
 
         # Generate risk labels based on domain rules
         labels = []
@@ -166,6 +166,12 @@ class RFPredictionPlugin(BasePredictionPlugin):
                 risk_score += 1
             elif plant_ages[i] < 60:
                 risk_score += 0.5
+            
+            # Light intensity factor (Low light + High humidity/Soil = extra risk)
+            if light_intensities[i] < 30:
+                risk_score += 1.0 # Cloud covered / shaded
+            elif light_intensities[i] > 80:
+                risk_score -= 0.5 # Bright sunlight (reduces some fungal risk)
             
             # Add some noise
             risk_score += np.random.normal(0, 0.8)
@@ -336,7 +342,7 @@ class RFPredictionPlugin(BasePredictionPlugin):
                 float(inputs.get("rainfall", 0)),
                 float(inputs.get("soil_moisture", 50)),
                 int(inputs.get("plant_age_days", 30)),
-                float(inputs.get("light_intensity") or 800.0),
+                float(inputs.get("light_intensity") if inputs.get("light_intensity") is not None else 65.0),
                 crop_encoded
             ]])
 

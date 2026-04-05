@@ -25,7 +25,7 @@ function SensorCard({ icon, label, value, unit, color, isOnline }) {
           ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25'
           : 'bg-red-500/15 text-red-400 border-red-500/25'
       }`}>
-        <Server size={8} /> {isOnline ? 'SENSOR' : 'OFFLINE'}
+        <Server size={8} /> SENSOR
       </span>
     </div>
   )
@@ -84,12 +84,13 @@ export default function Dashboard({ onNavigate }) {
 
   // ── Fetch latest IoT data ──
   const fetchTelemetry = async () => {
+    setIotLoading(true)
     try {
       const response = await api.get('/iot-data/latest')
       setTelemetry(response.data)
       setIotError(null)
     } catch (err) {
-      setIotError('No sensor data available. Connect your ESP32.')
+      setIotError('Hardware unreachable. Displaying last known data.')
     } finally {
       setIotLoading(false)
     }
@@ -140,7 +141,15 @@ export default function Dashboard({ onNavigate }) {
     }
   }
 
-  const isOnline = !!telemetry && !iotError
+  const isOnline = (() => {
+    if (!telemetry || iotError) return false
+    if (telemetry.timestamp) {
+      const lastUpdate = new Date(telemetry.timestamp.replace(' ', 'T') + 'Z')
+      const ageSeconds = (Date.now() - lastUpdate.getTime()) / 1000
+      if (ageSeconds > 60) return false
+    }
+    return true
+  })()
 
   return (
     <div className="w-full max-w-5xl mx-auto animate-fade-in flex flex-col gap-8 pb-16">
@@ -187,11 +196,11 @@ export default function Dashboard({ onNavigate }) {
           </div>
         </div>
 
-        {iotError ? (
+        {iotError && !telemetry ? (
           <div className="bg-red-500/10 text-red-400 p-5 rounded-2xl flex items-center gap-3 font-semibold border border-red-500/20 text-sm">
             <AlertTriangle size={18} /> {iotError}
           </div>
-        ) : iotLoading ? (
+        ) : iotLoading && !telemetry ? (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="animate-pulse bg-white/5 rounded-2xl h-32 border border-white/5"></div>
@@ -200,15 +209,52 @@ export default function Dashboard({ onNavigate }) {
         ) : (
           <>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <SensorCard icon={<Thermometer size={22} />} label="Temperature" value={telemetry?.temperature} unit="°C" color="#ef4444" isOnline={isOnline} />
-              <SensorCard icon={<Droplets size={22} />} label="Humidity" value={telemetry?.humidity} unit="%" color="#3b82f6" isOnline={isOnline} />
-              <SensorCard icon={<Layers size={22} />} label="Soil Moisture" value={telemetry?.soil_moisture} unit="%" color="#f59e0b" isOnline={isOnline} />
-              <SensorCard icon={<Sun size={22} />} label="Light Intensity" value={telemetry?.light_intensity || 'N/A'} unit={telemetry?.light_intensity ? ' lux' : ''} color="#eab308" isOnline={isOnline} />
-              <SensorCard icon={<CloudRain size={22} />} label="Rain Status" value={telemetry?.rain_status ? 'YES' : 'NO'} unit="" color={telemetry?.rain_status ? '#06b6d4' : '#6b7280'} isOnline={isOnline} />
+              {[
+                { icon: <Thermometer size={22} />, label: 'Temperature', value: telemetry?.temperature, unit: '°C', color: '#ef4444' },
+                { icon: <Droplets size={22} />, label: 'Humidity', value: telemetry?.humidity, unit: '%', color: '#3b82f6' },
+                { 
+                  icon: <Layers size={22} />, 
+                  label: 'Soil Moisture', 
+                  value: telemetry?.soil_moisture !== null && telemetry?.soil_moisture !== undefined 
+                    ? telemetry.soil_moisture 
+                    : 'N/A', 
+                  unit: '%', 
+                  color: '#f59e0b' 
+                },
+                { 
+                  icon: <Sun size={22} />, 
+                  label: 'Light (Brightness)', 
+                  value: telemetry?.light_intensity !== null && telemetry?.light_intensity !== undefined ? telemetry.light_intensity : 'N/A', 
+                  unit: telemetry?.light_intensity !== null && telemetry?.light_intensity !== undefined ? 'Lux' : '', 
+                  color: '#eab308'
+                },
+                { icon: <CloudRain size={22} />, label: 'Rain Status', value: telemetry?.rain_status ? 'YES' : 'NO', unit: '', color: telemetry?.rain_status ? '#06b6d4' : '#6b7280' },
+              ].map(({ icon, label, value, unit, color }) => (
+                <div key={label} className="relative group bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col items-center text-center hover:border-white/20 hover:bg-white/[0.07] transition-all duration-300 overflow-hidden">
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `radial-gradient(circle at 50% 0%, ${color}15, transparent 70%)` }}></div>
+                  <div className="relative z-10 w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: `${color}15`, color }}>
+                    {icon}
+                  </div>
+                  <p className="relative z-10 text-[9px] uppercase tracking-[0.2em] text-text-secondary font-black mb-1.5">{label}</p>
+                  <p className="relative z-10 text-2xl font-black text-white">
+                    {value !== null && value !== undefined ? value : '—'}
+                    {unit && value !== null && value !== undefined && <span className="text-sm font-medium text-text-secondary ml-0.5">{unit}</span>}
+                  </p>
+                  <span className="relative z-10 inline-flex items-center gap-1 text-[7px] font-black uppercase tracking-widest mt-2 px-2 py-0.5 rounded-full border bg-emerald-500/15 text-emerald-400 border-emerald-500/25">
+                    <Server size={8} /> SENSOR
+                  </span>
+                </div>
+              ))}
             </div>
             {telemetry?.timestamp && (
-              <p className="text-[10px] text-text-secondary text-right mt-3 font-medium">
-                Last updated: {new Date(telemetry.timestamp.replace(' ', 'T') + 'Z').toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'medium' })}
+              <p className="text-[10px] text-text-secondary text-right mt-3 font-medium flex items-center justify-end gap-1.5 uppercase tracking-widest">
+                <RefreshCw size={10} className={iotLoading ? 'animate-spin' : ''} />
+                Last updated: {(() => {
+                  const d = new Date(telemetry.timestamp.replace(' ', 'T') + 'Z');
+                  const dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+                  const timeStr = d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
+                  return `${dateStr} / ${timeStr}`;
+                })()}
               </p>
             )}
           </>

@@ -167,6 +167,11 @@ async def predict_pest_risk(request: PredictionRequest):
                 detail += "Weather API could not provide these values. Please enter them manually."
             raise HTTPException(status_code=400, detail=detail)
 
+        # ── Normalize Sensors ──
+        # Light: 4095 (dark) -> 0 (bright). Normalize raw ADC to 0-100% Brightness for the ML Model.
+        raw_light = request.light_intensity if request.light_intensity is not None else 2048
+        normalized_light = max(0, min(100, round(((4095 - float(raw_light)) / 4095.0) * 100, 1)))
+
         # ── Build final inputs ──
         inputs = {
             "temperature": float(temperature),
@@ -176,6 +181,9 @@ async def predict_pest_risk(request: PredictionRequest):
             "soil_moisture": float(request.soil_moisture),
             "plant_age_days": int(request.plant_age_days),
             "location": location,
+            "light_intensity": normalized_light,
+            "raw_light_ldr": request.light_intensity, # Keep raw for reference if needed
+            "rain_status": request.rain_status or 0
         }
 
         mode = request.mode.strip().lower()
@@ -201,8 +209,8 @@ async def predict_pest_risk(request: PredictionRequest):
         iot_data_payload = {
             "humidity": inputs["humidity"],
             "soil_moisture": inputs["soil_moisture"],
-            "rain_status": request.rain_status,
-            "light_intensity": request.light_intensity
+            "rain_status": inputs["rain_status"],
+            "light_intensity": inputs["light_intensity"]
         }
         iot_alerts = iot_plugin.analyze_sensor_data(iot_data_payload)
         result["iot_alerts"] = iot_alerts

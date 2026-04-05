@@ -8,7 +8,7 @@ async function testIoT() {
       humidity: 88, // High humidity (should trigger disease alert)
       soil_moisture: 30, // 0 = completely dry, 100 = completely submerged/wet
       rain_status: 1, // Rain detected
-      light_intensity: 1200 // High lux for testing light intensity feature
+      light_intensity: 1200 // Raw LDR ADC value to simulate hardware
     });
     console.log('POST Response:', response.status, response.data);
     

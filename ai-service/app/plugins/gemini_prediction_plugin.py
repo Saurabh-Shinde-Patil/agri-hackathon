@@ -232,7 +232,7 @@ class GeminiPredictionPlugin(BasePredictionPlugin):
             f"- Temperature: {inputs.get('temperature', 'N/A')}°C\n"
             f"- Humidity: {inputs.get('humidity', 'N/A')}%\n"
             f"- Rainfall: {inputs.get('rainfall', 'N/A')} mm\n"
-            f"- Light Intensity: {inputs.get('light_intensity', 'Unknown')} lux\n"
+            f"- Light Intensity: {inputs.get('raw_light_ldr', inputs.get('light_intensity', 'Unknown'))} lux\n"
             f"- Soil Moisture: {inputs.get('soil_moisture', 'N/A')}%\n"
             f"- Plant Age: {inputs.get('plant_age_days', 'N/A')} days since sowing\n"
             f"- Location: {inputs.get('location', 'Not specified')}\n\n"
