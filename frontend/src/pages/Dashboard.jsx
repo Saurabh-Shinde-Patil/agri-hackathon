@@ -5,7 +5,9 @@ import {
   CheckCircle2, MapPin, Navigation, Wind, Eye, Cloud,
   ArrowRight, Zap, BarChart3, Cpu, Wifi, WifiOff
 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import api from '../config/api'
+import { useAuth } from '../context/AuthContext'
 
 // ─── Sensor Card ────────────────────────────────────────────
 function SensorCard({ icon, label, value, unit, color, isOnline }) {
@@ -69,7 +71,10 @@ function ModuleCard({ icon, title, description, gradient, onClick }) {
 // ═════════════════════════════════════════════════════════════
 //  MAIN DASHBOARD
 // ═════════════════════════════════════════════════════════════
-export default function Dashboard({ onNavigate }) {
+export default function Dashboard() {
+  const { activeFarmId } = useAuth();
+  const navigate = useNavigate();
+
   // IoT State
   const [telemetry, setTelemetry] = useState(null)
   const [iotLoading, setIotLoading] = useState(true)
@@ -84,9 +89,10 @@ export default function Dashboard({ onNavigate }) {
 
   // ── Fetch latest IoT data ──
   const fetchTelemetry = async () => {
+    // Temporarily ignore activeFarmId check so all users see global ESP32 data.
     setIotLoading(true)
     try {
-      const response = await api.get('/iot-data/latest')
+      const response = await api.get(`/iot-data/latest?farm_id=${activeFarmId || 'global'}`)
       setTelemetry(response.data)
       setIotError(null)
     } catch (err) {
@@ -100,7 +106,7 @@ export default function Dashboard({ onNavigate }) {
     fetchTelemetry()
     const interval = setInterval(fetchTelemetry, 10000)
     return () => clearInterval(interval)
-  }, [])
+  }, [activeFarmId])
 
   // ── Get GPS Location ──
   const handleGetGps = () => {
@@ -341,27 +347,27 @@ export default function Dashboard({ onNavigate }) {
           <h3 className="text-lg font-black text-white">Modules</h3>
           <p className="text-text-secondary text-xs">— Select a module to get started</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="flex flex-col gap-6">
           <ModuleCard
             icon={<Radio size={28} />}
             title="IoT Sensor Module"
             description="Live hardware telemetry, threshold alerts, and AI-powered analysis using real-time ESP32 sensor data."
             gradient="linear-gradient(135deg, #059669, #10b981)"
-            onClick={() => onNavigate('iot')}
+            onClick={() => navigate('/iot')}
           />
           <ModuleCard
             icon={<Camera size={28} />}
             title="Plant Scan Module"
             description="Upload a leaf image for instant disease detection using ML models, Gemini AI, or Grok Vision."
             gradient="linear-gradient(135deg, #7c3aed, #a78bfa)"
-            onClick={() => onNavigate('plantscan')}
+            onClick={() => navigate('/plantscan')}
           />
           <ModuleCard
             icon={<Activity size={28} />}
             title="Prediction Engine"
             description="Forecast pest & disease risk with location-aware weather data, multi-model AI, and ranked threat analysis."
             gradient="linear-gradient(135deg, #2563eb, #3b82f6)"
-            onClick={() => onNavigate('prediction')}
+            onClick={() => navigate('/prediction')}
           />
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { AlertCircle, CheckCircle2, HeartPulse, Info, Lightbulb, Leaf, Shield, Wind, Bug, ThermometerSun, Sprout, Zap } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import VoiceAssistant from './VoiceAssistant'
 
 function RankedThreatCard({ threat, color }) {
   const [expanded, setExpanded] = useState(false)
@@ -227,9 +228,12 @@ export default function DetectionResult({ previewUrl, isDetecting, result, error
               <Shield size={140} />
             </div>
             <div className="relative z-10">
-              <div className="flex items-center gap-3 text-primary-color font-black text-sm uppercase tracking-widest mb-4">
-                <CheckCircle2 size={24} />
-                Priority Action
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3 text-primary-color font-black text-sm uppercase tracking-widest">
+                  <CheckCircle2 size={24} />
+                  Priority Action
+                </div>
+                <VoiceAssistant textToSpeak={result.core_recommendation || "Consult a specialist based on these indicators."} />
               </div>
               <p className="text-2xl text-white font-medium leading-relaxed">
                 {result.core_recommendation || "Consult a specialist based on these indicators."}

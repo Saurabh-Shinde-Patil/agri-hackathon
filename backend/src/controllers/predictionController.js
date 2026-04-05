@@ -1,11 +1,26 @@
 const axios = require('axios');
 const config = require('../config/env');
+const IotData = require('../models/IotData');
+const PredictionHistory = require('../models/PredictionHistory');
 
 const predictPestRisk = async (req, res) => {
     try {
-        const { temperature, humidity, rainfall, crop_type, soil_moisture, plant_age_days, mode, ai_provider, location, data_sources, rain_status, light_intensity } = req.body;
+        const { farm_id = 'farm123', crop_type, plant_age_days, mode, ai_provider, location, data_sources, rainfall } = req.body;
+        
+        let { temperature, humidity, soil_moisture, rain_status, light_intensity } = req.body;
 
-        // Validate ALWAYS-required fields (can never come from weather API)
+        // Fetch latest IoT data to supplement missing fields
+        const latestIotData = await IotData.findOne({ farm_id }).sort({ timestamp: -1 });
+
+        if (latestIotData) {
+            temperature = temperature ?? latestIotData.temperature;
+            humidity = humidity ?? latestIotData.humidity;
+            soil_moisture = soil_moisture ?? latestIotData.soil_moisture;
+            rain_status = rain_status ?? latestIotData.rain_status;
+            light_intensity = light_intensity ?? latestIotData.light_intensity;
+        }
+
+        // Validate ALWAYS-required fields. soil_moisture could now come from DB
         const missing = [];
         if (!crop_type) missing.push('crop_type');
         if (soil_moisture === undefined || soil_moisture === null) missing.push('soil_moisture');
@@ -13,18 +28,15 @@ const predictPestRisk = async (req, res) => {
 
         if (missing.length > 0) {
             return res.status(400).json({ 
-                error: `Missing required fields: ${missing.join(', ')}. These values cannot be auto-fetched and must be provided manually.`,
+                error: `Missing required fields: ${missing.join(', ')}. These values cannot be auto-fetched and must be provided.`,
                 required: ['crop_type', 'soil_moisture', 'plant_age_days']
             });
         }
 
-        // temp, humidity, rainfall are optional — AI service will auto-fetch if location is provided
-        // If they're missing AND no location, AI service will return an error
-
         console.log(`Forwarding prediction request to AI Service at ${config.AI_PREDICT_URL}`);
 
         // Forward JSON body to Python FastAPI backend
-        const response = await axios.post(config.AI_PREDICT_URL, {
+        const requestPayload = {
             temperature: temperature !== undefined && temperature !== null && temperature !== '' ? parseFloat(temperature) : null,
             humidity: humidity !== undefined && humidity !== null && humidity !== '' ? parseFloat(humidity) : null,
             rainfall: rainfall !== undefined && rainfall !== null && rainfall !== '' ? parseFloat(rainfall) : null,
@@ -37,12 +49,32 @@ const predictPestRisk = async (req, res) => {
             data_sources: data_sources || null,
             rain_status: rain_status !== undefined && rain_status !== null ? parseInt(rain_status) : null,
             light_intensity: light_intensity !== undefined && light_intensity !== null ? parseFloat(light_intensity) : null
-        }, {
+        };
+
+        const response = await axios.post(config.AI_PREDICT_URL, requestPayload, {
             headers: { 'Content-Type': 'application/json' },
             timeout: 30000
         });
 
-        res.json(response.data);
+        const pythonData = response.data;
+
+        // Ensure proper standard output formatting based on user requirement:
+        // Output Format: mode, risk, confidence, reason, suggestion, source
+        // Map the python response to fit this if needed, or simply save it if already well-structured
+        const predictionRecord = new PredictionHistory({
+            farm_id: farm_id,
+            mode: pythonData.mode || mode || 'hybrid',
+            risk: pythonData.risk || pythonData.Risk || pythonData.primary_risk_level || 'Unknown',
+            confidence: pythonData.confidence,
+            reason: pythonData.reason || pythonData.analysis,
+            suggestion: pythonData.suggestion || pythonData.recommendation || (pythonData.preventive_actions ? pythonData.preventive_actions.join(', ') : ''),
+            source: pythonData.source || ai_provider || 'Unknown',
+            raw_response: pythonData
+        });
+
+        await predictionRecord.save();
+
+        res.json(pythonData);
 
     } catch (error) {
         console.error('Error forwarding to AI prediction service:', error.message);

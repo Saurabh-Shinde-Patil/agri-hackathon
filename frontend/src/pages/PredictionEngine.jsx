@@ -6,6 +6,7 @@ import {
   TrendingUp, BarChart3, Target, Navigation, Globe, User, Cloud
 } from 'lucide-react'
 import api from '../config/api'
+import { useAuth } from '../context/AuthContext'
 
 // ─── Crop Options ──────────────────────────────────────────────
 const CROP_OPTIONS = [
@@ -109,6 +110,8 @@ function RankedThreatCard({ threat, color }) {
 }
 
 export default function PredictionEngine() {
+  const { activeFarmId } = useAuth();
+  
   // ── Form State ──
   const [temperature, setTemperature] = useState('')
   const [humidity, setHumidity] = useState('')
@@ -190,6 +193,7 @@ export default function PredictionEngine() {
 
     try {
       const payload = {
+        farm_id: activeFarmId,
         crop_type: cropType,
         soil_moisture: parseFloat(soilMoisture),
         plant_age_days: parseInt(plantAge),

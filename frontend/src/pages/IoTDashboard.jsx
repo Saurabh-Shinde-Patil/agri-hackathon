@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
 import { 
   Thermometer, Droplets, CloudRain, Sprout, Layers, CalendarDays,
   Target, Activity, AlertTriangle, CheckCircle2, Shield, Bug, 
@@ -111,7 +112,8 @@ function RankedThreatCard({ threat, color }) {
 
 
 
-export default function IoTDashboard() {
+export default function IoTDashboard() { 
+const { activeFarmId } = useAuth(); 
   const [telemetry, setTelemetry] = useState(null)
   const [isFetching, setIsFetching] = useState(false)
   const [fetchError, setFetchError] = useState(null)
@@ -132,7 +134,7 @@ export default function IoTDashboard() {
     setIsFetching(true)
     // We don't reset fetchError here to avoid UI flicker if previously failed
     try {
-      const response = await api.get('/iot-data/latest')
+      const response = await api.get(`/iot-data/latest?farm_id=${activeFarmId}`)
       setTelemetry(response.data)
       setFetchError(null) // Clear error on success
     } catch (err) {
@@ -184,7 +186,7 @@ export default function IoTDashboard() {
         }
       }
 
-      const response = await api.post('/predict', payload)
+      const response = await api.post('/predict', { ...payload, farm_id: activeFarmId })
       setResult(response.data)
     } catch (err) {
       console.error(err)

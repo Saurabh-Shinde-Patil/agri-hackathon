@@ -3,8 +3,9 @@ import { Camera, Settings, UploadCloud, CheckCircle2, RefreshCw } from 'lucide-r
 import ImageUploader from '../components/ImageUploader'
 import DetectionResult from '../components/DetectionResult'
 import api from '../config/api'
+import { useAuth } from '../context/AuthContext'
 
-export default function Home() {
+export default function Home() { const { activeFarmId } = useAuth(); 
   const [selectedImage, setSelectedImage] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [isDetecting, setIsDetecting] = useState(false)
@@ -31,6 +32,7 @@ export default function Home() {
     formData.append('image', selectedImage)
     formData.append('mode', useMode)
     formData.append('ai_provider', aiProvider)
+    formData.append('farm_id', activeFarmId)
 
     try {
       const response = await api.post('/detect', formData, {

@@ -2,6 +2,7 @@ const axios = require('axios');
 const FormData = require('form-data');
 const fs = require('fs');
 const config = require('../config/env');
+const DetectionHistory = require('../models/DetectionHistory');
 
 const detectDisease = async (req, res) => {
     try {
@@ -9,10 +10,13 @@ const detectDisease = async (req, res) => {
             return res.status(400).json({ error: 'No image uploaded. Please provide an image file.' });
         }
 
+        const farm_id = req.body.farm_id || 'farm123';
+
         // Prepare the file payload and mode to send to the AI service
         const formData = new FormData();
         formData.append('image', fs.createReadStream(req.file.path), req.file.originalname);
         
+        // Pass standard flags
         let mode = req.body.mode || 'model';
         let ai_provider = req.body.ai_provider || 'gemini';
         formData.append('mode', mode);
@@ -32,8 +36,20 @@ const detectDisease = async (req, res) => {
             fs.unlinkSync(req.file.path);
         }
 
+        const pythonData = response.data;
+
+        // Save detection history
+        const detectionRecord = new DetectionHistory({
+            farm_id: farm_id,
+            result: pythonData,
+            disease_name: pythonData.disease_name || pythonData.disease || 'Unknown',
+            // image_url could be set here if we integrated S3 or local static serving, for now leave blank
+        });
+
+        await detectionRecord.save();
+
         // Send back the prediction
-        res.json(response.data);
+        res.json(pythonData);
 
     } catch (error) {
         console.error('Error forwarding to AI service:', error.message);

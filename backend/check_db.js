@@ -1,15 +1,19 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const dbPath = path.join(__dirname, 'data/iot_data.sqlite');
-const db = new sqlite3.Database(dbPath);
+require('dotenv').config();
+const mongoose = require('mongoose');
 
-console.log('Querying last 5 IoT data entries...');
-db.each("SELECT * FROM iot_data ORDER BY timestamp DESC LIMIT 5", (err, row) => {
-    if (err) {
-        console.error(err);
-    } else {
-        console.log(JSON.stringify(row));
+async function testConnection() {
+    console.log("Testing connection out to: ", process.env.MONGODB_URI.substring(0, 50) + "...");
+    try {
+        await mongoose.connect(process.env.MONGODB_URI, { 
+            family: 4, 
+            serverSelectionTimeoutMS: 5000 
+        });
+        console.log("✅ SUCCESS! Connected to MongoDB.");
+        process.exit(0);
+    } catch (e) {
+        console.error("❌ ERROR:", e.message);
+        process.exit(1);
     }
-}, () => {
-    db.close();
-});
+}
+
+testConnection();
