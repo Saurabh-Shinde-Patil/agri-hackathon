@@ -3,6 +3,7 @@ const cors = require('cors');
 const detectionRoutes = require('./routes/detectionRoutes');
 const predictionRoutes = require('./routes/predictionRoutes');
 const iotRoutes = require('./routes/iotRoutes');
+const weatherRoutes = require('./routes/weatherRoutes');
 
 const app = express();
 
@@ -29,6 +30,7 @@ class App {
         this.app.use('/api', detectionRoutes);
         this.app.use('/api', predictionRoutes);
         this.app.use('/api', iotRoutes);
+        this.app.use('/api', weatherRoutes);
     }
 }
 

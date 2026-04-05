@@ -1,8 +1,18 @@
 import os
 import random
+import torch
 from typing import Dict, Union
 from PIL import Image
 from ..core.plugin_interface import BaseDetectionPlugin
+
+# Fix for PyTorch 2.6+: torch.load now defaults to weights_only=True,
+# but YOLO .pt files need full unpickling. Patch it for trusted model files.
+_original_torch_load = torch.load
+def _patched_torch_load(*args, **kwargs):
+    if 'weights_only' not in kwargs:
+        kwargs['weights_only'] = False
+    return _original_torch_load(*args, **kwargs)
+torch.load = _patched_torch_load
 
 class YOLOPlugin(BaseDetectionPlugin):
     """

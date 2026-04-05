@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Sun, Moon, Activity, Camera, Radio } from 'lucide-react'
+import { Sun, Moon, Activity, Camera, Radio, LayoutDashboard } from 'lucide-react'
+import Dashboard from './pages/Dashboard'
 import Home from './pages/Home'
 import PredictionEngine from './pages/PredictionEngine'
 import IoTDashboard from './pages/IoTDashboard'
@@ -9,7 +10,7 @@ function App() {
     return localStorage.getItem('agrishield-theme') || 'dark'
   })
   const [activeTab, setActiveTab] = useState(() => {
-    return localStorage.getItem('agrishield-tab') || 'prediction'
+    return localStorage.getItem('agrishield-tab') || 'dashboard'
   })
 
   useEffect(() => {
@@ -26,6 +27,7 @@ function App() {
   }
 
   const tabs = [
+    { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} />, description: 'Home Overview' },
     { key: 'prediction', label: 'Prediction Engine', icon: <Activity size={16} />, description: 'Pest & Disease Forecasting' },
     { key: 'plantscan', label: 'PlantScan', icon: <Camera size={16} />, description: 'Image Detection' },
     { key: 'iot', label: 'IoT Sensors', icon: <Radio size={16} />, description: 'Real-time Telemetry' }
@@ -53,7 +55,7 @@ function App() {
       </header>
 
       {/* ═══ Tab Navigation ═══ */}
-      <nav className="flex gap-2 p-1.5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 mb-10 shadow-xl w-fit mx-auto">
+      <nav className="flex gap-2 p-1.5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 mb-10 shadow-xl w-fit mx-auto flex-wrap justify-center">
         {tabs.map(({ key, label, icon, description }) => (
           <button
             key={key}
@@ -66,7 +68,7 @@ function App() {
           >
             {icon}
             <span>{label}</span>
-            <span className={`text-[9px] uppercase tracking-widest font-medium hidden md:inline ${
+            <span className={`text-[9px] uppercase tracking-widest font-medium hidden lg:inline ${
               activeTab === key ? 'text-white/60' : 'text-text-secondary/50'
             }`}>
               {description}
@@ -77,6 +79,7 @@ function App() {
 
       {/* ═══ Page Content ═══ */}
       <div className="flex-1">
+        {activeTab === 'dashboard' && <Dashboard onNavigate={setActiveTab} />}
         {activeTab === 'prediction' && <PredictionEngine />}
         {activeTab === 'plantscan' && <Home />}
         {activeTab === 'iot' && <IoTDashboard />}

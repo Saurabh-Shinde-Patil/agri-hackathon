@@ -3,7 +3,7 @@ import {
   Thermometer, Droplets, CloudRain, Sprout, Layers, CalendarDays,
   Target, Activity, AlertTriangle, CheckCircle2, Shield, Bug, 
   Leaf, Zap, Sun, RefreshCw, Info, Settings, TrendingUp, BarChart3, 
-  Globe, User, Cloud, Server, ChevronDown
+  Globe, User, Cloud, Server, ChevronDown, Cpu, Wifi, WifiOff
 } from 'lucide-react'
 import api from '../config/api'
 
@@ -520,61 +520,76 @@ export default function IoTDashboard() {
         <p className="text-text-secondary text-sm">Real-time agricultural monitoring via ESP32 sensors</p>
       </div>
 
-      {/* ── Telemetry Grid ── */}
-      <div className="glass-panel p-8 rounded-[32px] border border-white/10 relative overflow-hidden">
-        <div className="flex justify-between items-center mb-8">
+      {/* ── Telemetry Grid (matches Dashboard style) ── */}
+      <div className="glass-panel p-6 md:p-8 rounded-[28px] border border-white/10">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Server className="text-cyan-400" />
-            <h3 className="text-lg font-bold">Latest Sensor Readings</h3>
-            {isFetching && <RefreshCw size={14} className="animate-spin text-text-secondary ml-2" />}
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+              <Cpu size={20} className="text-emerald-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-white">IoT Sensor Station</h3>
+              <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">ESP32 Live Telemetry</p>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-[10px] uppercase font-black tracking-widest text-text-secondary">Last Updated</p>
-            <p className="text-white text-sm font-medium">
-              {telemetry ? new Date(telemetry.timestamp.replace(' ', 'T') + 'Z').toLocaleString() : 'Loading...'}
-            </p>
+          <div className="flex items-center gap-3">
+            {telemetry && !fetchError ? (
+              <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+                <Wifi size={12} /> Online
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-full">
+                <WifiOff size={12} /> Offline
+              </span>
+            )}
+            <button onClick={fetchTelemetry} className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all">
+              <RefreshCw size={14} className={`text-text-secondary ${isFetching ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
 
         {fetchError ? (
-          <div className="bg-red-500/10 text-red-400 p-6 rounded-2xl flex items-center justify-center gap-4 font-semibold border border-red-500/20">
-            <AlertTriangle /> {fetchError}
+          <div className="bg-red-500/10 text-red-400 p-5 rounded-2xl flex items-center gap-3 font-semibold border border-red-500/20 text-sm">
+            <AlertTriangle size={18} /> {fetchError}
           </div>
         ) : !telemetry ? (
-          <div className="animate-pulse flex gap-4 h-32 w-full bg-white/5 rounded-2xl"></div>
-        ) : (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex flex-col text-center">
-              <Thermometer className="mx-auto mb-2 text-red-400" size={24} />
-              <p className="text-xs uppercase tracking-widest text-text-secondary font-bold mb-1">Temperature</p>
-              <p className="text-2xl font-black">{telemetry.temperature}°C</p>
-              <SourceBadge source="sensor" />
-            </div>
-            <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex flex-col text-center">
-              <Droplets className="mx-auto mb-2 text-blue-400" size={24} />
-              <p className="text-xs uppercase tracking-widest text-text-secondary font-bold mb-1">Humidity</p>
-              <p className="text-2xl font-black">{telemetry.humidity}%</p>
-              <SourceBadge source="sensor" />
-            </div>
-            <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex flex-col text-center">
-              <Layers className="mx-auto mb-2 text-amber-500" size={24} />
-              <p className="text-xs uppercase tracking-widest text-text-secondary font-bold mb-1">Soil Moisture</p>
-              <p className="text-2xl font-black">{telemetry.soil_moisture}%</p>
-              <SourceBadge source="sensor" />
-            </div>
-            <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex flex-col text-center">
-              <Sun className="mx-auto mb-2 text-yellow-400" size={24} />
-              <p className="text-xs uppercase tracking-widest text-text-secondary font-bold mb-1">Light Int.</p>
-              <p className="text-2xl font-black">{telemetry.light_intensity || 'N/A'}</p>
-              <SourceBadge source="sensor" />
-            </div>
-            <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex flex-col text-center">
-              <CloudRain className={`mx-auto mb-2 ${telemetry.rain_status ? 'text-cyan-400' : 'text-gray-500'}`} size={24} />
-              <p className="text-xs uppercase tracking-widest text-text-secondary font-bold mb-1">Rain</p>
-              <p className="text-2xl font-black">{telemetry.rain_status ? 'YES' : 'NO'}</p>
-              <SourceBadge source="sensor" />
-            </div>
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="animate-pulse bg-white/5 rounded-2xl h-32 border border-white/5"></div>
+            ))}
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {[
+                { icon: <Thermometer size={22} />, label: 'Temperature', value: telemetry.temperature, unit: '°C', color: '#ef4444' },
+                { icon: <Droplets size={22} />, label: 'Humidity', value: telemetry.humidity, unit: '%', color: '#3b82f6' },
+                { icon: <Layers size={22} />, label: 'Soil Moisture', value: telemetry.soil_moisture, unit: '%', color: '#f59e0b' },
+                { icon: <Sun size={22} />, label: 'Light Intensity', value: telemetry.light_intensity || 'N/A', unit: telemetry.light_intensity ? ' lux' : '', color: '#eab308' },
+                { icon: <CloudRain size={22} />, label: 'Rain Status', value: telemetry.rain_status ? 'YES' : 'NO', unit: '', color: telemetry.rain_status ? '#06b6d4' : '#6b7280' },
+              ].map(({ icon, label, value, unit, color }) => (
+                <div key={label} className="relative group bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col items-center text-center hover:border-white/20 hover:bg-white/[0.07] transition-all duration-300 overflow-hidden">
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `radial-gradient(circle at 50% 0%, ${color}15, transparent 70%)` }}></div>
+                  <div className="relative z-10 w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: `${color}15`, color }}>
+                    {icon}
+                  </div>
+                  <p className="relative z-10 text-[9px] uppercase tracking-[0.2em] text-text-secondary font-black mb-1.5">{label}</p>
+                  <p className="relative z-10 text-2xl font-black text-white">
+                    {value !== null && value !== undefined ? value : '—'}
+                    {unit && value !== null && value !== undefined && <span className="text-sm font-medium text-text-secondary ml-0.5">{unit}</span>}
+                  </p>
+                  <span className="relative z-10 inline-flex items-center gap-1 text-[7px] font-black uppercase tracking-widest mt-2 px-2 py-0.5 rounded-full border bg-emerald-500/15 text-emerald-400 border-emerald-500/25">
+                    <Server size={8} /> SENSOR
+                  </span>
+                </div>
+              ))}
+            </div>
+            {telemetry.timestamp && (
+              <p className="text-[10px] text-text-secondary text-right mt-3 font-medium">
+                Last updated: {new Date(telemetry.timestamp.replace(' ', 'T') + 'Z').toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'medium' })}
+              </p>
+            )}
+          </>
         )}
       </div>
 
