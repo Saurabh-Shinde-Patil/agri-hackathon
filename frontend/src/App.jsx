@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Sun, Moon, Activity, Camera } from 'lucide-react'
+import { Sun, Moon, Activity, Camera, Radio } from 'lucide-react'
 import Home from './pages/Home'
 import PredictionEngine from './pages/PredictionEngine'
+import IoTDashboard from './pages/IoTDashboard'
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -27,6 +28,7 @@ function App() {
   const tabs = [
     { key: 'prediction', label: 'Prediction Engine', icon: <Activity size={16} />, description: 'Pest & Disease Forecasting' },
     { key: 'plantscan', label: 'PlantScan', icon: <Camera size={16} />, description: 'Image Detection' },
+    { key: 'iot', label: 'IoT Sensors', icon: <Radio size={16} />, description: 'Real-time Telemetry' }
   ]
 
   return (
@@ -75,11 +77,9 @@ function App() {
 
       {/* ═══ Page Content ═══ */}
       <div className="flex-1">
-        {activeTab === 'prediction' ? (
-          <PredictionEngine />
-        ) : (
-          <Home />
-        )}
+        {activeTab === 'prediction' && <PredictionEngine />}
+        {activeTab === 'plantscan' && <Home />}
+        {activeTab === 'iot' && <IoTDashboard />}
       </div>
     </div>
   )

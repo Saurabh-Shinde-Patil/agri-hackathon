@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const detectionRoutes = require('./routes/detectionRoutes');
 const predictionRoutes = require('./routes/predictionRoutes');
+const iotRoutes = require('./routes/iotRoutes');
 
 const app = express();
 
@@ -27,6 +28,7 @@ class App {
         // Use detection routes
         this.app.use('/api', detectionRoutes);
         this.app.use('/api', predictionRoutes);
+        this.app.use('/api', iotRoutes);
     }
 }
 

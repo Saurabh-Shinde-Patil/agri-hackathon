@@ -6,14 +6,16 @@ from ..plugins.yolo_plugin import YOLOPlugin
 from ..plugins.api_plugin import APIPlugin
 from fastapi import Form
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Dict, Any
 from ..core.config import settings
+from ..plugins.iot_plugin import IoTPlugin
 
 router = APIRouter()
 
 # Initialize detection plugins
 model_plugin = YOLOPlugin(model_path=settings.model_path)
 api_plugin = APIPlugin()
+iot_plugin = IoTPlugin()
 
 # Lazy-loaded prediction plugins (loaded on first /predict call)
 _rf_plugin = None
@@ -81,6 +83,9 @@ class PredictionRequest(BaseModel):
     plant_age_days: int = Field(..., description="Plant age in days since sowing")
     mode: str = Field("hybrid", description="Prediction mode: model | api | hybrid")
     location: Optional[str] = Field(None, description="City name for weather API lookup")
+    rain_status: Optional[int] = Field(None, description="Rain status from sensor (0 or 1)")
+    light_intensity: Optional[float] = Field(None, description="Light intensity from sensor")
+    data_sources: Optional[Dict[str, str]] = Field(None, description="Explicit data sources map supplied by frontend")
 
 
 # ═══════════════════════════════════════════════════════════
@@ -101,7 +106,7 @@ async def predict_pest_risk(request: PredictionRequest):
     """
     try:
         # ── Track data sources ──
-        data_sources = {
+        data_sources = request.data_sources if request.data_sources else {
             "temperature": "user",
             "humidity": "user",
             "rainfall": "user",
@@ -182,6 +187,16 @@ async def predict_pest_risk(request: PredictionRequest):
             result["weather_data_fetched"] = weather_data
         if weather_error:
             result["weather_error"] = weather_error
+
+        # ── Generate IoT Alerts ──
+        iot_data_payload = {
+            "humidity": inputs["humidity"],
+            "soil_moisture": inputs["soil_moisture"],
+            "rain_status": request.rain_status,
+            "light_intensity": request.light_intensity
+        }
+        iot_alerts = iot_plugin.analyze_sensor_data(iot_data_payload)
+        result["iot_alerts"] = iot_alerts
 
         return result
 
