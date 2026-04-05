@@ -5,6 +5,8 @@ class Settings(BaseSettings):
     port: int = 8000
     model_path: str = "best.pt"
     gemini_api_key: str | None = None
+    grok_api_key: str | None = None
+    together_api_key: str | None = None
     openweather_api_key: str | None = None
 
     class Config:

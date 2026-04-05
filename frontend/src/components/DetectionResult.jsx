@@ -1,6 +1,77 @@
 import { AlertCircle, CheckCircle2, HeartPulse, Info, Lightbulb, Leaf, Shield, Wind, Bug, ThermometerSun, Sprout, Zap } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
+function RankedThreatCard({ threat, color }) {
+  const [expanded, setExpanded] = useState(false)
+  
+  const isObj = typeof threat === 'object'
+  const name = isObj ? threat.name : threat
+  const prob = isObj ? threat.probability : 0
+  const advisory = isObj ? threat.advisory : null
+
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-lg transition-all mb-4">
+      <div 
+        className="p-5 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center gap-6 w-full">
+          {/* Progress Circle & Text */}
+          <div className="flex items-center gap-4 min-w-[200px]">
+             <div className="w-12 h-12 rounded-full flex items-center justify-center font-black text-xl shrink-0" style={{ backgroundColor: `${color}20`, color: color }}>
+               {prob}%
+             </div>
+             <div>
+               <h4 className="text-white font-bold text-lg">{name}</h4>
+               <p className="text-text-secondary text-xs mt-1">Probability</p>
+             </div>
+          </div>
+          
+          {/* Progress Bar (Hidden on very small screens) */}
+          <div className="hidden md:block flex-1 max-w-[200px] mr-auto">
+             <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                <div 
+                  className="h-full rounded-full transition-all duration-1000" 
+                  style={{ width: `${prob}%`, backgroundColor: color, boxShadow: `0 0 10px ${color}80` }}
+                ></div>
+             </div>
+          </div>
+        </div>
+        
+        <button className="hidden sm:block px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shrink-0 ml-4" style={{ backgroundColor: `${color}20`, color: color }}>
+          {expanded ? 'Hide Solution' : 'See Solution'}
+        </button>
+      </div>
+
+      {expanded && advisory && (
+        <div className="p-6 border-t border-white/10 bg-black/20 space-y-6 animate-fade-in">
+          <div className="flex gap-4">
+            <div className="mt-1"><Zap size={20} className="text-red-400 shrink-0" /></div>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-1">Immediate Action</p>
+              <p className="text-white/80 text-sm leading-relaxed">{advisory.immediate || advisory.chemical || "Consult expert."}</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <div className="mt-1"><Leaf size={20} className="text-green-400 shrink-0" /></div>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-1">Organic Control</p>
+              <p className="text-white/80 text-sm leading-relaxed">{advisory.organic || "No specific organic."}</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <div className="mt-1"><Shield size={20} className="text-blue-400 shrink-0" /></div>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-1">Preventive Steps</p>
+              <p className="text-white/80 text-sm leading-relaxed">{advisory.preventive || "Implement standard protocols."}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function DetectionResult({ previewUrl, isDetecting, result, error, onReset }) {
   const [loadingStep, setLoadingStep] = useState(0)
 
@@ -176,6 +247,21 @@ export default function DetectionResult({ previewUrl, isDetecting, result, error
               "{result.description || 'Description data is currently unavailable.'}"
             </p>
           </div>
+
+          {/* ══ Ranked Additional Diseases (If present) ══ */}
+          {result.diseases && result.diseases.length > 1 && (
+            <div className="glass-panel p-8 rounded-3xl border border-white/10 bg-black/10">
+              <div className="flex items-center gap-3 text-red-500 font-black mb-6 uppercase tracking-widest text-xs">
+                <Bug size={18} />
+                Other Potential Threats Identified
+              </div>
+              <div className="flex flex-col">
+                {result.diseases.slice(1).map((dis, idx) => (
+                  <RankedThreatCard key={idx} threat={dis} color="#ef4444" />
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* ══ Row 4: Analysis Grid — Symptoms, Causes, How It Spreads ══ */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

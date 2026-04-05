@@ -14,7 +14,9 @@ const detectDisease = async (req, res) => {
         formData.append('image', fs.createReadStream(req.file.path), req.file.originalname);
         
         let mode = req.body.mode || 'model';
+        let ai_provider = req.body.ai_provider || 'gemini';
         formData.append('mode', mode);
+        formData.append('ai_provider', ai_provider);
 
         console.log(`Forwarding image to AI Service at ${config.AI_SERVICE_URL}`);
         

@@ -22,7 +22,7 @@ _rf_plugin = None
 _gemini_plugin = None
 _hybrid_plugin = None
 
-def _get_prediction_plugin(mode: str):
+def _get_prediction_plugin(mode: str, provider: str = "gemini"):
     """Lazy-load prediction plugins on first use."""
     global _rf_plugin, _gemini_plugin, _hybrid_plugin
     
@@ -32,14 +32,20 @@ def _get_prediction_plugin(mode: str):
             _rf_plugin = RFPredictionPlugin()
         return _rf_plugin
     elif mode == "api":
-        if _gemini_plugin is None:
-            from ..plugins.gemini_prediction_plugin import GeminiPredictionPlugin
-            _gemini_plugin = GeminiPredictionPlugin()
-        return _gemini_plugin
+        if provider == "grok":
+            from ..plugins.grok_prediction_plugin import GrokPredictionPlugin
+            return GrokPredictionPlugin()
+        else:
+            if _gemini_plugin is None:
+                from ..plugins.gemini_prediction_plugin import GeminiPredictionPlugin
+                _gemini_plugin = GeminiPredictionPlugin()
+            return _gemini_plugin
     else:  # hybrid
         if _hybrid_plugin is None:
             from ..plugins.hybrid_prediction_plugin import HybridPredictionPlugin
             _hybrid_plugin = HybridPredictionPlugin()
+        # Set the requested API provider inside the hybrid plugin
+        _hybrid_plugin.set_api_provider(provider)
         return _hybrid_plugin
 
 
@@ -82,6 +88,7 @@ class PredictionRequest(BaseModel):
     soil_moisture: float = Field(..., description="Soil moisture in %")
     plant_age_days: int = Field(..., description="Plant age in days since sowing")
     mode: str = Field("hybrid", description="Prediction mode: model | api | hybrid")
+    ai_provider: str = Field("gemini", description="gemini | grok")
     location: Optional[str] = Field(None, description="City name for weather API lookup")
     rain_status: Optional[int] = Field(None, description="Rain status from sensor (0 or 1)")
     light_intensity: Optional[float] = Field(None, description="Light intensity from sensor")
@@ -172,10 +179,12 @@ async def predict_pest_risk(request: PredictionRequest):
         }
 
         mode = request.mode.strip().lower()
+        provider = request.ai_provider.strip().lower()
+
         if mode not in ("model", "api", "hybrid"):
             mode = "hybrid"
 
-        plugin = _get_prediction_plugin(mode)
+        plugin = _get_prediction_plugin(mode, provider)
         result = plugin.predict(inputs)
 
         # ── Add metadata ──
@@ -212,7 +221,8 @@ async def predict_pest_risk(request: PredictionRequest):
 @router.post("/detect")
 async def detect_disease(
     image: UploadFile = File(...),
-    mode: str = Form("model")
+    mode: str = Form("model"),
+    ai_provider: str = Form("gemini")
 ):
     if not image.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File provided is not an image.")
@@ -226,16 +236,16 @@ async def detect_disease(
         source = mode
         
         if mode == "api":
-            result_raw = api_plugin.predict(pil_image)
-            source = "api"
+            result_raw = api_plugin.predict(pil_image, provider=ai_provider)
+            source = f"{ai_provider}_api"
         elif mode == "hybrid":
             res_model = model_plugin.predict(pil_image)
-            res_api = api_plugin.predict(pil_image)
+            res_api = api_plugin.predict(pil_image, provider=ai_provider)
             
             # Compare confidence
             if res_api.get("confidence_score", 0) > res_model.get("confidence_score", 0):
                 result_raw = res_api
-                source = "api"
+                source = f"{ai_provider}_api"
             else:
                 result_raw = res_model
                 source = "model"
@@ -247,7 +257,7 @@ async def detect_disease(
         # Inject advisory if it's missing (e.g. from YOLO model)
         if "advisory" not in result_raw:
             disease_name = result_raw.get("disease_name", "Unknown")
-            enrichment = api_plugin.get_advisory(disease_name)
+            enrichment = api_plugin.get_advisory(disease_name, provider=ai_provider)
             # Spread enrichment fields into result_raw so causes, symptoms, etc. are available
             for key in ["description", "symptoms", "causes", "how_it_spreads", "core_recommendation", "plant_name"]:
                 if key in enrichment and not result_raw.get(key):

@@ -6,9 +6,9 @@ async function testIoT() {
     const response = await axios.post('http://localhost:5000/api/iot-data', {
       temperature: 28.5,
       humidity: 88, // High humidity (should trigger disease alert)
-      soil_moisture: 25, // Low moisture (should trigger irrigation alert)
+      soil_moisture: 30, // 0 = completely dry, 100 = completely submerged/wet
       rain_status: 1, // Rain detected
-      light_intensity: 850
+      light_intensity: 1200 // High lux for testing light intensity feature
     });
     console.log('POST Response:', response.status, response.data);
     

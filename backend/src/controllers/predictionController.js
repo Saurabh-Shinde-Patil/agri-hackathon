@@ -3,7 +3,7 @@ const config = require('../config/env');
 
 const predictPestRisk = async (req, res) => {
     try {
-        const { temperature, humidity, rainfall, crop_type, soil_moisture, plant_age_days, mode, location } = req.body;
+        const { temperature, humidity, rainfall, crop_type, soil_moisture, plant_age_days, mode, ai_provider, location, data_sources, rain_status, light_intensity } = req.body;
 
         // Validate ALWAYS-required fields (can never come from weather API)
         const missing = [];
@@ -32,7 +32,11 @@ const predictPestRisk = async (req, res) => {
             soil_moisture: parseFloat(soil_moisture),
             plant_age_days: parseInt(plant_age_days),
             mode: mode || 'hybrid',
-            location: location || null
+            ai_provider: ai_provider || 'gemini',
+            location: location || null,
+            data_sources: data_sources || null,
+            rain_status: rain_status !== undefined && rain_status !== null ? parseInt(rain_status) : null,
+            light_intensity: light_intensity !== undefined && light_intensity !== null ? parseFloat(light_intensity) : null
         }, {
             headers: { 'Content-Type': 'application/json' },
             timeout: 30000

@@ -70,8 +70,23 @@ class GeminiPredictionPlugin(BasePredictionPlugin):
                         },
                         "pest_threats": {
                             "type": "array",
-                            "items": {"type": "string"},
-                            "description": "List of likely pest and disease threats"
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {"type": "string", "description": "Name of disease/pest"},
+                                    "probability": {"type": "number", "description": "Probability percentage 0-100"},
+                                    "advisory": {
+                                        "type": "object",
+                                        "properties": {
+                                            "immediate": {"type": "string"},
+                                            "preventive": {"type": "string"},
+                                            "organic": {"type": "string"}
+                                        }
+                                    }
+                                },
+                                "required": ["name", "probability", "advisory"]
+                            },
+                            "description": "List of likely pest and disease threats sorted by probability"
                         },
                         "recommendations": {
                             "type": "object",
@@ -80,7 +95,7 @@ class GeminiPredictionPlugin(BasePredictionPlugin):
                                 "preventive": {"type": "string"},
                                 "organic": {"type": "string"}
                             },
-                            "description": "IPM recommendations"
+                            "description": "General top-level IPM recommendations"
                         }
                     },
                     "required": ["risk_level", "probability", "reason", "pest_threats", "recommendations"]
@@ -217,6 +232,7 @@ class GeminiPredictionPlugin(BasePredictionPlugin):
             f"- Temperature: {inputs.get('temperature', 'N/A')}°C\n"
             f"- Humidity: {inputs.get('humidity', 'N/A')}%\n"
             f"- Rainfall: {inputs.get('rainfall', 'N/A')} mm\n"
+            f"- Light Intensity: {inputs.get('light_intensity', 'Unknown')} lux\n"
             f"- Soil Moisture: {inputs.get('soil_moisture', 'N/A')}%\n"
             f"- Plant Age: {inputs.get('plant_age_days', 'N/A')} days since sowing\n"
             f"- Location: {inputs.get('location', 'Not specified')}\n\n"
@@ -224,11 +240,11 @@ class GeminiPredictionPlugin(BasePredictionPlugin):
             f"1. risk_level: One of 'Low', 'Medium', 'High', or 'Critical'\n"
             f"2. probability: A decimal between 0.0 and 1.0 representing the confidence\n"
             f"3. reason: A detailed 2-3 sentence explanation of WHY this risk level\n"
-            f"4. pest_threats: A list of 2-5 most likely pests or diseases for this crop under these conditions\n"
+            f"4. pest_threats: An array of objects, where each object contains a 'name' (string) of the pest/disease, a 'probability' (integer 0-100 representing percentage likelihood), and an 'advisory' object.\n"
             f"5. recommendations: An object with 'immediate' (urgent action), 'preventive' (long-term), "
             f"and 'organic' (eco-friendly) treatment recommendations\n\n"
             f"Consider seasonal patterns, regional pest pressure, and the interaction between "
-            f"environmental factors when making your assessment."
+            f"environmental factors including light intensity when making your assessment."
         )
 
     def _error_result(self, message: str) -> Dict[str, Any]:

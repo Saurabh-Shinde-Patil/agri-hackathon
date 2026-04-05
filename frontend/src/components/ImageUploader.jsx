@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { UploadCloud, Camera, Settings, CheckCircle2 } from 'lucide-react'
 
-export default function ImageUploader({ onImageSelect, onDetect, isDetecting, hasImage, previewUrl, mode, setMode }) {
+export default function ImageUploader({ onImageSelect, onDetect, isDetecting, hasImage, previewUrl, mode, setMode, aiProvider, setAiProvider }) {
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef(null)
 
@@ -104,6 +104,25 @@ export default function ImageUploader({ onImageSelect, onDetect, isDetecting, ha
                 ))}
               </div>
             </div>
+
+            {(mode === 'api' || mode === 'hybrid') && (
+              <div className="text-left animate-fade-in mt-2">
+                <label className="block text-[10px] font-black text-text-secondary mb-2 uppercase tracking-[0.2em] flex items-center gap-2">
+                  <Settings size={14} /> AI Provider
+                </label>
+                <div className="grid grid-cols-2 gap-2 p-1 bg-black/30 rounded-xl border border-panel-border">
+                  {['gemini', 'grok'].map((provider) => (
+                    <button
+                      key={provider}
+                      onClick={() => setAiProvider(provider)}
+                      className={`py-2 px-3 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${aiProvider === provider ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-text-secondary hover:text-white'}`}
+                    >
+                      {provider}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <button 
               className="w-full py-5 bg-[#059669] text-white rounded-2xl font-black text-xl hover:bg-[#047857] shadow-xl shadow-[#059669]/20 transition-all flex items-center justify-center gap-4 disabled:opacity-50 active:scale-95" 

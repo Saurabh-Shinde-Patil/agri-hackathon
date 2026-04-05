@@ -37,16 +37,88 @@ function SourceBadge({ source }) {
   )
 }
 
+function RankedThreatCard({ threat, color }) {
+  const [expanded, setExpanded] = useState(false)
+  
+  const isObj = typeof threat === 'object'
+  const name = isObj ? threat.name : threat
+  const prob = isObj ? threat.probability : 0
+  const advisory = isObj ? threat.advisory : null
+
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-lg transition-all mb-4">
+      <div 
+        className="p-5 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center gap-6 w-full">
+          {/* Progress Circle & Text */}
+          <div className="flex items-center gap-4 min-w-[200px]">
+             <div className="w-12 h-12 rounded-full flex items-center justify-center font-black text-xl shrink-0" style={{ backgroundColor: `${color}20`, color: color }}>
+               {prob}%
+             </div>
+             <div>
+               <h4 className="text-white font-bold text-lg">{name}</h4>
+               <p className="text-text-secondary text-xs mt-1">Probability of occurrence</p>
+             </div>
+          </div>
+          
+          {/* Progress Bar (Hidden on very small screens) */}
+          <div className="hidden md:block flex-1 max-w-[200px] mr-auto">
+             <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                <div 
+                  className="h-full rounded-full transition-all duration-1000" 
+                  style={{ width: `${prob}%`, backgroundColor: color, boxShadow: `0 0 10px ${color}80` }}
+                ></div>
+             </div>
+          </div>
+        </div>
+        
+        <button className="hidden sm:block px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shrink-0 ml-4" style={{ backgroundColor: `${color}20`, color: color }}>
+          {expanded ? 'Hide Solution' : 'See Solution'}
+        </button>
+      </div>
+
+      {expanded && advisory && (
+        <div className="p-6 border-t border-white/10 bg-black/20 space-y-6 animate-fade-in">
+          <div className="flex gap-4">
+            <div className="mt-1"><Zap size={20} className="text-red-400 shrink-0" /></div>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-1">Immediate Action / Chemical</p>
+              <p className="text-white/80 text-sm leading-relaxed">{advisory.immediate || advisory.chemical || "Consult specialist."}</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <div className="mt-1"><Leaf size={20} className="text-green-400 shrink-0" /></div>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-1">Organic Control</p>
+              <p className="text-white/80 text-sm leading-relaxed">{advisory.organic || "No specific organic control."}</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <div className="mt-1"><Shield size={20} className="text-blue-400 shrink-0" /></div>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-1">Preventive Steps</p>
+              <p className="text-white/80 text-sm leading-relaxed">{advisory.preventive || "Condition requires standard protocols."}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function PredictionEngine() {
   // ── Form State ──
   const [temperature, setTemperature] = useState('')
   const [humidity, setHumidity] = useState('')
   const [rainfall, setRainfall] = useState('')
-  const [cropType, setCropType] = useState('')
+  const [mode, setMode] = useState('hybrid')
+  const [aiProvider, setAiProvider] = useState('gemini')
+  const [cropType, setCropType] = useState('tomato')
   const [soilMoisture, setSoilMoisture] = useState('')
   const [plantAge, setPlantAge] = useState('')
   const [location, setLocation] = useState('')
-  const [mode, setMode] = useState('hybrid')
 
   // ── GPS State ──
   const [isGettingLocation, setIsGettingLocation] = useState(false)
@@ -121,8 +193,9 @@ export default function PredictionEngine() {
         crop_type: cropType,
         soil_moisture: parseFloat(soilMoisture),
         plant_age_days: parseInt(plantAge),
-        mode,
-        location: location || null,
+        mode: mode,
+        ai_provider: aiProvider,
+        location: location.trim() || null,
         // Only send weather values if user provided them
         temperature: temperature !== '' ? parseFloat(temperature) : null,
         humidity: humidity !== '' ? parseFloat(humidity) : null,
@@ -221,6 +294,25 @@ export default function PredictionEngine() {
               ))}
             </div>
           </div>
+          {(mode === 'api' || mode === 'hybrid') && (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Settings size={16} className="text-primary-color" />
+                <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">AI Provider</span>
+              </div>
+              <div className="flex gap-1 p-1 bg-black/30 rounded-xl border border-panel-border">
+                {['gemini', 'grok'].map((provider) => (
+                  <button
+                    key={provider}
+                    onClick={() => setAiProvider(provider)}
+                    className={`py-1.5 px-4 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${aiProvider === provider ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-text-secondary hover:text-white'}`}
+                  >
+                    {provider}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="flex items-center gap-3">
             <button
               onClick={handleSubmit}
@@ -290,14 +382,14 @@ export default function PredictionEngine() {
             {/* Source & Mode Tags */}
             <div className="flex flex-wrap gap-3 text-[10px] font-black tracking-widest uppercase px-1">
               <span className="bg-white/5 border border-white/10 px-3 py-1.5 rounded-full text-text-secondary">
-                Source: {result.source || result.mode}
+                Source: {result.source === 'hybrid' ? `Hybrid (${aiProvider})` : result.source || result.mode}
               </span>
               <span className="bg-white/5 border border-white/10 px-3 py-1.5 rounded-full text-text-secondary">
                 Mode: {result.mode}
               </span>
               {result.winner && (
                 <span className="bg-primary-color/10 border border-primary-color/20 px-3 py-1.5 rounded-full text-primary-color">
-                  Winner: {result.winner}
+                  Winner: {result.winner === 'cloud_api' ? aiProvider : result.winner}
                 </span>
               )}
             </div>
@@ -317,11 +409,11 @@ export default function PredictionEngine() {
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-bold text-text-secondary w-20">Gemini AI</span>
+                    <span className="text-[10px] font-bold text-text-secondary w-20 capitalize">{aiProvider} AI</span>
                     <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
                       <div className="h-full rounded-full bg-purple-500 transition-all duration-1000" style={{ width: `${Math.round(result.gemini_confidence * 100)}%` }}></div>
                     </div>
-                    <span className={`text-sm font-black ${result.winner === 'gemini_api' ? 'text-purple-400' : 'text-text-secondary'}`}>
+                    <span className={`text-sm font-black ${result.winner === 'cloud_api' ? 'text-purple-400' : 'text-text-secondary'}`}>
                       {Math.round(result.gemini_confidence * 100)}%
                     </span>
                   </div>
@@ -339,22 +431,16 @@ export default function PredictionEngine() {
           </div>
         </div>
 
-        {/* ═══ Row 2: Pest Threats ═══ */}
+        {/* ═══ Row 2: Ranked Pest Threats ═══ */}
         {result.pest_threats && result.pest_threats.length > 0 && (
           <div className="glass-panel p-8 rounded-3xl border border-white/10 bg-white/5">
             <div className="flex items-center gap-3 text-red-400 mb-6 uppercase tracking-widest font-black text-xs">
               <Bug size={20} />
-              Identified Pest & Disease Threats
+              Ranked Disease & Pest Threats
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col">
               {result.pest_threats.map((threat, idx) => (
-                <span key={idx}
-                  className="px-5 py-2.5 rounded-2xl text-sm font-bold border transition-all hover:scale-105 hover:translate-y-[-2px]"
-                  style={{ borderColor: `${riskCfg.color}40`, background: `${riskCfg.color}10`, color: riskCfg.color }}
-                >
-                  <Bug size={14} className="inline mr-2 opacity-60" />
-                  {threat}
-                </span>
+                <RankedThreatCard key={idx} threat={threat} color={riskCfg.color} />
               ))}
             </div>
           </div>
@@ -570,6 +656,23 @@ export default function PredictionEngine() {
 
         {/* ═══ Required Inputs Section ═══ */}
         <div>
+          {(mode === 'api' || mode === 'hybrid') && (
+            <div className="mb-8 animate-fade-in">
+              <label className="block text-[10px] font-black text-text-secondary mb-3 uppercase tracking-[0.2em] flex items-center gap-2">
+                 AI Provider
+              </label>
+              <div className="flex gap-2 p-1 bg-black/30 rounded-xl border border-panel-border max-w-[200px]">
+                {['gemini', 'grok'].map(provider => (
+                  <button key={provider} type="button" onClick={() => setAiProvider(provider)}
+                    className={`flex-1 py-1.5 px-3 rounded-lg transition-all text-center ${aiProvider === provider ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-text-secondary hover:text-white'}`}
+                  >
+                    <span className="block text-[10px] font-bold uppercase tracking-widest">{provider}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
             <User size={12} /> Required Inputs <span className="text-red-400">*</span>
           </p>

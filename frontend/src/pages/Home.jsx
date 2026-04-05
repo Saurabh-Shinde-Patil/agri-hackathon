@@ -11,6 +11,7 @@ export default function Home() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
   const [mode, setMode] = useState('api')
+  const [aiProvider, setAiProvider] = useState('gemini')
 
   const handleImageSelect = (file) => {
     setSelectedImage(file)
@@ -29,6 +30,7 @@ export default function Home() {
     const formData = new FormData()
     formData.append('image', selectedImage)
     formData.append('mode', useMode)
+    formData.append('ai_provider', aiProvider)
 
     try {
       const response = await api.post('/detect', formData, {
@@ -63,6 +65,8 @@ export default function Home() {
             previewUrl={previewUrl}
             mode={mode}
             setMode={setMode}
+            aiProvider={aiProvider}
+            setAiProvider={setAiProvider}
           />
           
           <DetectionResult 
@@ -104,6 +108,26 @@ export default function Home() {
                 ))}
               </div>
             </div>
+
+            {(mode === 'api' || mode === 'hybrid') && (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Settings size={16} className="text-primary-color" />
+                  <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">AI Provider</span>
+                </div>
+                <div className="flex gap-1 p-1 bg-black/30 rounded-xl border border-panel-border">
+                  {['gemini', 'grok'].map((provider) => (
+                    <button
+                      key={provider}
+                      onClick={() => setAiProvider(provider)}
+                      className={`py-1.5 px-4 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${aiProvider === provider ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-text-secondary hover:text-white'}`}
+                    >
+                      {provider}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center gap-3">
               <button 
