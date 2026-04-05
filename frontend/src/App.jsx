@@ -11,6 +11,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import FarmManager from './pages/FarmManager'
 import AdminDashboard from './pages/AdminDashboard'
+import FloatingChatbot from './components/SmartAssistant/FloatingChatbot'
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
@@ -114,6 +115,9 @@ const AppLayout = ({ children }) => {
       <div className="flex-1">
         {children}
       </div>
+      
+      {/* Global Chatbot */}
+      <FloatingChatbot />
     </div>
   )
 }
