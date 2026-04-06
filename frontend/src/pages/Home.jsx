@@ -7,7 +7,9 @@ import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useSettings } from '../context/SettingsContext'
 
-export default function Home() { const { activeFarmId } = useAuth(); 
+export default function Home() { 
+  const { activeFarmId } = useAuth(); 
+  const { language } = useLanguage();
   const { modeSelectionEnabled } = useSettings();
   const [selectedImage, setSelectedImage] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)

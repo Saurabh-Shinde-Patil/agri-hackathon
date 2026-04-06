@@ -48,6 +48,9 @@ class HybridPredictionPlugin(BasePredictionPlugin):
             if name_lower not in seen:
                 seen.add(name_lower)
                 merged.append(threat)
+        
+        # Ensure it's sorted by highest probability first
+        merged.sort(key=lambda x: x.get("probability", 0) if isinstance(x, dict) else 0, reverse=True)
         return merged[:8]
 
     def predict(self, inputs: Dict[str, Any]) -> Dict[str, Any]:

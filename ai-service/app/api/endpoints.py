@@ -315,7 +315,8 @@ async def detect_disease(
             "core_recommendation": result_raw.get("core_recommendation", ""),
             "source": source,
             "suggestions": result_raw.get("suggestions", []),
-            "advisory": result_raw.get("advisory", {})
+            "advisory": result_raw.get("advisory", {}),
+            "diseases": sorted(result_raw.get("diseases", []), key=lambda x: x.get("probability", 0), reverse=True)
         }
         
         # ── Translate output if necessary ──
