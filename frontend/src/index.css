@@ -25,6 +25,20 @@
   --scrollbar-thumb: #1e293b;
   --scrollbar-thumb-hover: #334155;
 
+  /* Extended tokens for theme-awareness */
+  --heading-color: #f8fafc;
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(255, 255, 255, 0.10);
+  --input-text: #f8fafc;
+  --input-placeholder: rgba(255, 255, 255, 0.20);
+  --surface-hover: rgba(255, 255, 255, 0.05);
+  --surface-overlay: rgba(0, 0, 0, 0.20);
+  --surface-raised: rgba(255, 255, 255, 0.05);
+  --surface-inset: rgba(0, 0, 0, 0.30);
+  --badge-bg: rgba(255, 255, 255, 0.05);
+  --badge-border: rgba(255, 255, 255, 0.10);
+  --muted-text: rgba(255, 255, 255, 0.50);
+
   /* Risk Level Colors */
   --risk-low: #10b981;
   --risk-medium: #f59e0b;
@@ -35,8 +49,8 @@
 [data-theme="light"] {
   --bg-color: #f0fdf4;
   --bg-secondary: #ecfdf5;
-  --panel-bg: rgba(255, 255, 255, 0.75);
-  --panel-border: rgba(0, 0, 0, 0.08);
+  --panel-bg: rgba(255, 255, 255, 0.80);
+  --panel-border: rgba(0, 0, 0, 0.10);
   --primary-color: #059669;
   --primary-hover: #047857;
   --text-primary: #0f172a;
@@ -49,6 +63,19 @@
   --scrollbar-track: #f1f5f9;
   --scrollbar-thumb: #cbd5e1;
   --scrollbar-thumb-hover: #94a3b8;
+
+  --heading-color: #0f172a;
+  --input-bg: rgba(0, 0, 0, 0.04);
+  --input-border: rgba(0, 0, 0, 0.12);
+  --input-text: #0f172a;
+  --input-placeholder: rgba(0, 0, 0, 0.35);
+  --surface-hover: rgba(0, 0, 0, 0.04);
+  --surface-overlay: rgba(0, 0, 0, 0.04);
+  --surface-raised: rgba(0, 0, 0, 0.03);
+  --surface-inset: rgba(0, 0, 0, 0.06);
+  --badge-bg: rgba(0, 0, 0, 0.05);
+  --badge-border: rgba(0, 0, 0, 0.10);
+  --muted-text: rgba(0, 0, 0, 0.45);
 
   --risk-low: #059669;
   --risk-medium: #d97706;
@@ -77,9 +104,266 @@
     @apply bg-panel-bg backdrop-blur-md border border-panel-border rounded-lg shadow-2xl;
     transition: background-color 0.3s ease, border-color 0.3s ease;
   }
+
+  /* Theme-aware text shorthand */
+  .theme-heading {
+    color: var(--heading-color);
+  }
+
+  .theme-input {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--input-text);
+  }
+
+  .theme-input::placeholder {
+    color: var(--input-placeholder);
+  }
+
+  .theme-surface {
+    background-color: var(--surface-hover);
+  }
+
+  .theme-surface-overlay {
+    background-color: var(--surface-overlay);
+  }
+
+  .theme-surface-inset {
+    background-color: var(--surface-inset);
+  }
+
+  .theme-badge {
+    background-color: var(--badge-bg);
+    border-color: var(--badge-border);
+  }
 }
 
-/* Scrollbar */
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT THEME — Global Overrides for hardcoded classes
+   These selectors use the [data-theme="light"] attribute
+   to fix all remaining Tailwind utility-level patterns
+   that assume dark mode.
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Text: white → dark ── */
+[data-theme="light"] .text-white {
+  color: var(--heading-color) !important;
+}
+
+[data-theme="light"] .text-white\/90 {
+  color: rgba(15, 23, 42, 0.90) !important;
+}
+
+[data-theme="light"] .text-white\/50 {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .text-white\/40 {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .text-white\/30 {
+  color: var(--input-placeholder) !important;
+}
+
+[data-theme="light"] .text-white\/20 {
+  color: var(--input-placeholder) !important;
+}
+
+/* ── Placeholder colors ── */
+[data-theme="light"] .placeholder\:text-white\/30::placeholder,
+[data-theme="light"] .placeholder\:text-white\/20::placeholder {
+  color: var(--input-placeholder) !important;
+}
+
+[data-theme="light"] .placeholder-white\/30::placeholder {
+  color: var(--input-placeholder) !important;
+}
+
+/* ── Backgrounds: white/X → subtle dark tints ── */
+[data-theme="light"] .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+[data-theme="light"] .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .bg-white\/\[0\.07\] {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ── Backgrounds: black/X → subtle light tints ── */
+[data-theme="light"] .bg-black\/20 {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .bg-black\/30 {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .bg-black\/40 {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── Borders: white/X → dark tints ── */
+[data-theme="light"] .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+[data-theme="light"] .border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .border-white\/8 {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .border-black\/30 {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── Hardcoded dark hex backgrounds ── */
+[data-theme="light"] .bg-\[\#1a2332\] {
+  background-color: var(--card-bg) !important;
+}
+
+/* ── Hover states ── */
+[data-theme="light"] .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .hover\:bg-white\/10:hover {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .hover\:bg-white\/20:hover {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .hover\:text-white:hover {
+  color: var(--heading-color) !important;
+}
+
+[data-theme="light"] .hover\:bg-white\/\[0\.07\]:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ── Focus states ── */
+[data-theme="light"] .focus\:bg-white\/10:focus {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* ── Group-hover text ── */
+[data-theme="light"] .group-hover\:text-white:hover,
+[data-theme="light"] .group:hover .group-hover\:text-white {
+  color: var(--heading-color) !important;
+}
+
+/* ── Focus-within states ── */
+[data-theme="light"] .group-focus-within\:text-primary-color {
+  color: var(--primary-color);
+}
+
+/* ── Scrollbar thumb for white/10 ── */
+[data-theme="light"] .scrollbar-thumb-white\/10::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+/* ── Select option backgrounds ── */
+[data-theme="light"] select option {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ── Chat bubbles: keep user messages white on green ── */
+[data-theme="light"] .bg-primary-color .text-white,
+[data-theme="light"] .bg-primary-color.text-white {
+  color: #ffffff !important;
+}
+
+/* ── Buttons that should keep white text (green/blue/indigo CTA buttons) ── */
+[data-theme="light"] .bg-\[\#059669\] .text-white,
+[data-theme="light"] .bg-\[\#059669\].text-white,
+[data-theme="light"] .bg-primary-color.text-white,
+[data-theme="light"] .bg-accent-color.text-white,
+[data-theme="light"] .bg-indigo-500.text-white,
+[data-theme="light"] .bg-red-500.text-white,
+[data-theme="light"] .bg-blue-500.text-white,
+[data-theme="light"] .bg-cyan-500.text-white {
+  color: #ffffff !important;
+}
+
+/* ── Ensure CTA buttons keep literal white text ── */
+[data-theme="light"] button.bg-\[\#059669\],
+[data-theme="light"] button.bg-primary-color,
+[data-theme="light"] button.bg-accent-color,
+[data-theme="light"] button.bg-indigo-500,
+[data-theme="light"] button.bg-cyan-500 {
+  color: #ffffff !important;
+}
+
+/* ── Green action buttons ── */
+[data-theme="light"] .bg-\[\#059669\] {
+  color: #ffffff !important;
+}
+
+/* ── Numbered circles in recommendations ── */
+[data-theme="light"] .bg-\[\#059669\].text-white,
+[data-theme="light"] .bg-red-500.text-white,
+[data-theme="light"] .bg-blue-500.text-white {
+  color: #ffffff !important;
+}
+
+/* ── Risk level badge circles (colored bg + white text) ── */
+[data-theme="light"] [style*="backgroundColor"] .text-white {
+  color: #ffffff !important;
+}
+
+/* ── Animated gradient text should stay gradient ── */
+[data-theme="light"] .bg-clip-text.text-transparent {
+  color: transparent !important;
+}
+
+/* ── FAB button (floating action button chat) always white icon ── */
+[data-theme="light"] .bg-gradient-to-tr .text-white {
+  color: #ffffff !important;
+}
+
+/* ── Active nav tab white text ── */
+[data-theme="light"] .bg-primary-color.text-white.shadow-lg {
+  color: #ffffff !important;
+}
+
+/* ── Light theme shadows: softer ── */
+[data-theme="light"] .shadow-2xl {
+  --tw-shadow: 0 10px 40px -12px rgba(0, 0, 0, 0.08);
+  --tw-shadow-colored: 0 10px 40px -12px var(--tw-shadow-color);
+}
+
+[data-theme="light"] .shadow-xl {
+  --tw-shadow: 0 8px 30px -10px rgba(0, 0, 0, 0.06);
+  --tw-shadow-colored: 0 8px 30px -10px var(--tw-shadow-color);
+}
+
+/* ── Glassmorphism: stronger blur & higher opacity in light mode ── */
+[data-theme="light"] .backdrop-blur-xl {
+  --tw-backdrop-blur: blur(20px);
+}
+
+[data-theme="light"] .backdrop-blur-md {
+  --tw-backdrop-blur: blur(14px);
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════════════════ */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -118,3 +402,33 @@ select option {
   animation: risk-pulse 2s ease-in-out infinite;
 }
 
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE RESPONSIVE UTILITIES
+   ═══════════════════════════════════════════════════════ */
+
+/* Hide nav text on very small screens */
+@media (max-width: 639px) {
+  .nav-label {
+    display: none;
+  }
+}
+
+/* Horizontal scrolling nav on mobile */
+.mobile-nav-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.mobile-nav-scroll::-webkit-scrollbar {
+  display: none;
+}

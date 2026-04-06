@@ -35,22 +35,17 @@ export default function FloatingChatbot() {
       
       recognition.continuous = false;
       recognition.interimResults = true;
-      recognition.lang = 'hi-IN'; // Multi-lingual dictation generally adapts well
+      recognition.lang = 'hi-IN';
 
       recognition.onstart = () => setIsListening(true);
       
       recognition.onresult = (event) => {
-        let interimTranscript = '';
         let finalTranscript = '';
-
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
             finalTranscript += event.results[i][0].transcript;
-          } else {
-            interimTranscript += event.results[i][0].transcript;
           }
         }
-        
         if (finalTranscript) {
            setInputVal(prev => prev + ' ' + finalTranscript);
         }
@@ -73,21 +68,16 @@ export default function FloatingChatbot() {
     if (isListening) {
       recognitionRef.current?.stop();
     } else {
-      setInputVal(''); // clear input when starting new dictation
+      setInputVal('');
       recognitionRef.current?.start();
     }
   };
 
   const speakText = (text) => {
     if (isMuted || !('speechSynthesis' in window)) return;
-    
-    // Stop any current speech
     window.speechSynthesis.cancel();
-    
     const utterance = new SpeechSynthesisUtterance(text);
-    // Auto-detection: native browser API handles language switching pretty well based on characters
     utterance.rate = 0.9; 
-    
     window.speechSynthesis.speak(utterance);
   };
 
@@ -97,8 +87,6 @@ export default function FloatingChatbot() {
 
     const userMessage = inputVal.trim();
     setInputVal('');
-    
-    // Stop listening if user hits send manually
     if (isListening) recognitionRef.current?.stop();
 
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
@@ -115,10 +103,7 @@ export default function FloatingChatbot() {
       const aiType = response.data.type || 'general';
 
       setMessages(prev => [...prev, { role: 'assistant', content: aiReply, type: aiType }]);
-      
-      // Auto Play audio
       speakText(aiReply);
-
     } catch (err) {
       console.error(err);
       setMessages(prev => [...prev, { role: 'assistant', content: 'Connection to the AI Assistant failed.', type: 'error' }]);
@@ -132,31 +117,31 @@ export default function FloatingChatbot() {
       {/* ── FAB ── */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-tr from-primary-color to-accent-color rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group hover:shadow-primary-color/40"
+        className="fixed bottom-6 right-4 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-tr from-primary-color to-accent-color rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group hover:shadow-primary-color/40"
       >
-        {isOpen ? <X size={26} className="text-white" /> : <MessageSquare size={26} className="text-white group-hover:animate-pulse" />}
+        {isOpen ? <X size={22} className="!text-white" /> : <MessageSquare size={22} className="!text-white group-hover:animate-pulse" />}
       </button>
 
       {/* ── Chat Window ── */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-[360px] md:w-[420px] max-h-[600px] h-[75vh] bg-[#1a2332] border border-white/10 rounded-3xl shadow-2xl z-50 flex flex-col overflow-hidden animate-fade-in-up">
+        <div className="fixed bottom-20 sm:bottom-24 right-3 sm:right-6 w-[calc(100vw-24px)] sm:w-[360px] md:w-[420px] max-h-[500px] sm:max-h-[600px] h-[70vh] sm:h-[75vh] bg-card-bg border border-panel-border rounded-2xl sm:rounded-3xl shadow-2xl z-50 flex flex-col overflow-hidden animate-fade-in-up">
           
           {/* Header */}
-          <div className="bg-white/5 p-4 border-b border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary-color/20 flex items-center justify-center">
-                <Bot size={22} className="text-primary-color" />
+          <div className="theme-surface p-3 sm:p-4 border-b border-panel-border flex items-center justify-between">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary-color/20 flex items-center justify-center">
+                <Bot size={18} className="text-primary-color" />
               </div>
               <div>
-                <h3 className="text-white font-bold tracking-wide">Agri Assistant</h3>
-                <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                <h3 className="text-text-primary font-bold tracking-wide text-sm sm:text-base">Agri Assistant</h3>
+                <p className="text-[9px] sm:text-[10px] text-emerald-400 font-bold uppercase tracking-widest flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Online
                 </p>
               </div>
             </div>
             
             <div className="flex items-center gap-2">
-              <button onClick={() => setIsMuted(!isMuted)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-text-secondary hover:text-white transition">
+              <button onClick={() => setIsMuted(!isMuted)} className="w-8 h-8 rounded-full theme-surface flex items-center justify-center text-text-secondary hover:text-text-primary transition">
                 {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
               </button>
             </div>
@@ -164,7 +149,7 @@ export default function FloatingChatbot() {
 
           {/* Provider Selector */}
           {modeSelectionEnabled && (
-            <div className="px-4 py-2 bg-black/20 border-b border-white/5 flex items-center gap-2">
+            <div className="px-3 sm:px-4 py-2 theme-surface-overlay border-b border-panel-border flex items-center gap-2">
               <Settings size={12} className="text-text-secondary" />
               <select 
                 value={aiProvider} 
@@ -179,13 +164,13 @@ export default function FloatingChatbot() {
           )}
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${
                   msg.role === 'user' 
-                    ? 'bg-primary-color text-white rounded-tr-sm shadow-md' 
-                    : 'bg-white/10 text-white/90 rounded-tl-sm border border-white/5'
+                    ? 'bg-primary-color !text-white rounded-tr-sm shadow-md' 
+                    : 'theme-surface text-text-primary rounded-tl-sm border border-panel-border'
                 }`}>
                   {msg.role === 'assistant' && msg.type !== 'general' && msg.type !== 'error' && (
                     <span className="block text-[9px] uppercase tracking-widest text-primary-color/70 mb-1 font-bold">
@@ -198,7 +183,7 @@ export default function FloatingChatbot() {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-white/5 p-4 rounded-2xl rounded-tl-sm border border-white/5 flex gap-1 items-center">
+                <div className="theme-surface p-4 rounded-2xl rounded-tl-sm border border-panel-border flex gap-1 items-center">
                   <div className="w-2 h-2 rounded-full bg-text-secondary animate-bounce [animation-delay:-0.3s]"></div>
                   <div className="w-2 h-2 rounded-full bg-text-secondary animate-bounce [animation-delay:-0.15s]"></div>
                   <div className="w-2 h-2 rounded-full bg-text-secondary animate-bounce"></div>
@@ -209,28 +194,28 @@ export default function FloatingChatbot() {
           </div>
 
           {/* Input Area */}
-          <div className="p-3 bg-black/20 border-t border-white/10">
+          <div className="p-2 sm:p-3 theme-surface-overlay border-t border-panel-border">
             <form onSubmit={handleSubmit} className="flex items-center gap-2">
               <button 
                 type="button" 
                 onClick={toggleListen}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isListening ? 'bg-red-500/20 text-red-500 animate-pulse border border-red-500/30' : 'bg-white/5 text-text-secondary hover:bg-white/10 hover:text-white'}`}
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all shrink-0 ${isListening ? 'bg-red-500/20 text-red-500 animate-pulse border border-red-500/30' : 'theme-surface text-text-secondary hover:bg-surface-hover hover:text-text-primary'}`}
               >
-                {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+                {isListening ? <MicOff size={16} /> : <Mic size={16} />}
               </button>
               <input 
                 type="text" 
                 value={inputVal}
                 onChange={(e) => setInputVal(e.target.value)}
                 placeholder={isListening ? "Listening..." : "Ask your farm assistant..."}
-                className="flex-1 bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-primary-color/50 transition-all font-medium"
+                className="flex-1 theme-input border rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-sm focus:outline-none focus:border-primary-color/50 transition-all font-medium min-w-0"
               />
               <button 
                 type="submit"
                 disabled={!inputVal.trim() && !isListening}
-                className="w-10 h-10 rounded-full bg-primary-color text-white flex items-center justify-center hover:bg-primary-color/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary-color !text-white flex items-center justify-center hover:bg-primary-color/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
               >
-                <Send size={16} className="-ml-0.5" />
+                <Send size={14} className="-ml-0.5" />
               </button>
             </form>
           </div>

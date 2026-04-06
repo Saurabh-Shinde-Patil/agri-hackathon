@@ -21,6 +21,18 @@ export default {
         'card-text': 'var(--card-text)',
         'card-text-secondary': 'var(--card-text-secondary)',
         'card-border': 'var(--card-border)',
+        // Extended theme-aware tokens
+        'heading': 'var(--heading-color)',
+        'input-bg': 'var(--input-bg)',
+        'input-border': 'var(--input-border)',
+        'input-text': 'var(--input-text)',
+        'surface-hover': 'var(--surface-hover)',
+        'surface-overlay': 'var(--surface-overlay)',
+        'surface-raised': 'var(--surface-raised)',
+        'surface-inset': 'var(--surface-inset)',
+        'badge-bg': 'var(--badge-bg)',
+        'badge-border': 'var(--badge-border)',
+        'muted-text': 'var(--muted-text)',
       },
       fontFamily: {
         outfit: ['Outfit', 'sans-serif'],

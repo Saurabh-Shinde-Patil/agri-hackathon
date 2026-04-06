@@ -50,21 +50,21 @@ function RankedThreatCard({ threat, color }) {
             <div className="mt-1"><Zap size={20} className="text-red-400 shrink-0" /></div>
             <div>
               <p className="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-1">Immediate Action</p>
-              <p className="text-white/80 text-sm leading-relaxed">{advisory.immediate || advisory.chemical || "Consult expert."}</p>
+              <p className="text-text-secondary text-sm leading-relaxed">{advisory.immediate || advisory.chemical || "Consult expert."}</p>
             </div>
           </div>
           <div className="flex gap-4">
             <div className="mt-1"><Leaf size={20} className="text-green-400 shrink-0" /></div>
             <div>
               <p className="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-1">Organic Control</p>
-              <p className="text-white/80 text-sm leading-relaxed">{advisory.organic || "No specific organic."}</p>
+              <p className="text-text-secondary text-sm leading-relaxed">{advisory.organic || "No specific organic."}</p>
             </div>
           </div>
           <div className="flex gap-4">
             <div className="mt-1"><Shield size={20} className="text-blue-400 shrink-0" /></div>
             <div>
               <p className="text-[10px] uppercase tracking-widest text-text-secondary font-bold mb-1">Preventive Steps</p>
-              <p className="text-white/80 text-sm leading-relaxed">{advisory.preventive || "Implement standard protocols."}</p>
+              <p className="text-text-secondary text-sm leading-relaxed">{advisory.preventive || "Implement standard protocols."}</p>
             </div>
           </div>
         </div>
@@ -93,8 +93,8 @@ export default function DetectionResult({ previewUrl, isDetecting, result, error
     return (
       <div className="glass-panel p-8 flex flex-col animate-fade-in min-h-[400px] w-full max-w-4xl mx-auto border-2 border-dashed border-white/5">
         <div className="flex-1 flex flex-col items-center justify-center text-text-secondary opacity-50">
-          <HeartPulse size={64} className="mb-4 stroke-[1.5]" />
-          <h3 className="text-xl font-bold">Waiting for Image...</h3>
+          <HeartPulse size={48} className="mb-4 stroke-[1.5]" />
+          <h3 className="text-lg sm:text-xl font-bold">Waiting for Image...</h3>
           <p className="text-sm">Scan results and expert advice will appear here</p>
         </div>
       </div>
@@ -186,7 +186,7 @@ export default function DetectionResult({ previewUrl, isDetecting, result, error
               <div className="glass-panel p-8 rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-transparent flex-1 relative overflow-hidden group">
                 <div className="relative z-10">
                   <p className="text-[10px] font-black text-primary-color uppercase tracking-[0.3em] mb-3 leading-none">Diagnostic Result</p>
-                  <h1 className="text-4xl font-black text-white leading-tight tracking-tight mb-2 drop-shadow-[0_5px_15px_rgba(255,255,255,0.08)]">
+                  <h1 className="text-2xl sm:text-4xl font-black text-text-primary leading-tight tracking-tight mb-2">
                     {result.disease}
                   </h1>
                   <p className="text-lg text-primary-color/70 font-medium">
@@ -209,7 +209,7 @@ export default function DetectionResult({ previewUrl, isDetecting, result, error
                     ></div>
                   </div>
                 </div>
-                <div className={`text-3xl font-black ${parseFloat(result.confidence) > 0.85 ? 'text-primary-color' : 'text-yellow-500'}`}>
+                <div className={`text-2xl sm:text-3xl font-black ${parseFloat(result.confidence) > 0.85 ? 'text-primary-color' : 'text-yellow-500'}`}>
                   {confidencePercent}%
                 </div>
               </div>
@@ -235,7 +235,7 @@ export default function DetectionResult({ previewUrl, isDetecting, result, error
                 </div>
                 <VoiceAssistant textToSpeak={result.core_recommendation || "Consult a specialist based on these indicators."} />
               </div>
-              <p className="text-2xl text-white font-medium leading-relaxed">
+              <p className="text-lg sm:text-2xl text-text-primary font-medium leading-relaxed">
                 {result.core_recommendation || "Consult a specialist based on these indicators."}
               </p>
             </div>

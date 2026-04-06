@@ -32,20 +32,20 @@ export default function ImageUploader({ onImageSelect, onDetect, isDetecting, ha
   }
 
   return (
-    <div className="glass-panel p-8 flex flex-col items-center justify-center text-center min-h-[450px] animate-fade-in relative overflow-hidden group">
+    <div className="glass-panel p-6 sm:p-8 flex flex-col items-center justify-center text-center min-h-[350px] sm:min-h-[450px] animate-fade-in relative overflow-hidden group">
       {!hasImage ? (
         <div 
-          className={`border-2 border-dashed border-panel-border rounded-xl p-12 w-full cursor-pointer transition-all relative overflow-hidden flex flex-col items-center justify-center bg-white/5 ${isDragging ? 'border-primary-color bg-primary-color/10 translate-y-[-2px]' : 'hover:border-primary-color hover:bg-primary-color/5 hover:translate-y-[-2px]'}`}
+          className={`border-2 border-dashed border-panel-border rounded-xl p-8 sm:p-12 w-full cursor-pointer transition-all relative overflow-hidden flex flex-col items-center justify-center theme-surface ${isDragging ? 'border-primary-color bg-primary-color/10 translate-y-[-2px]' : 'hover:border-primary-color hover:bg-primary-color/5 hover:translate-y-[-2px]'}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current.click()}
         >
-          <div className="w-20 h-20 bg-primary-color/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-             <UploadCloud className="w-10 h-10 text-primary-color" />
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary-color/10 rounded-full flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
+             <UploadCloud className="w-8 h-8 sm:w-10 sm:h-10 text-primary-color" />
           </div>
-          <h3 className="text-2xl font-bold mb-2">Select Plant Leaf</h3>
-          <p className="text-text-secondary text-sm max-w-[200px]">Drag & Drop your image or click to browse</p>
+          <h3 className="text-xl sm:text-2xl font-bold text-text-primary mb-2">Select Plant Leaf</h3>
+          <p className="text-text-secondary text-xs sm:text-sm max-w-[200px]">Drag & Drop your image or click to browse</p>
           <input 
             type="file" 
             ref={fileInputRef} 
@@ -56,7 +56,7 @@ export default function ImageUploader({ onImageSelect, onDetect, isDetecting, ha
         </div>
       ) : (
         <div className="w-full flex flex-col items-center animate-fade-in">
-          <div className="relative w-full max-w-[300px] aspect-square rounded-2xl overflow-hidden border-4 border-white/10 shadow-2xl mb-6">
+          <div className="relative w-full max-w-[250px] sm:max-w-[300px] aspect-square rounded-2xl overflow-hidden border-4 border-panel-border shadow-2xl mb-4 sm:mb-6">
             <img 
               src={previewUrl} 
               alt="Selected" 
@@ -69,14 +69,14 @@ export default function ImageUploader({ onImageSelect, onDetect, isDetecting, ha
             )}
           </div>
           
-          <div className="flex flex-col items-center mb-8">
+          <div className="flex flex-col items-center mb-6 sm:mb-8">
             <div className="flex items-center gap-2 text-primary-color font-bold mb-1">
                <CheckCircle2 size={18} />
                <span>Image uploaded successfully!</span>
             </div>
             <button 
               onClick={() => fileInputRef.current.click()}
-              className="text-sm text-text-secondary hover:text-white underline underline-offset-4 transition-colors"
+              className="text-sm text-text-secondary hover:text-text-primary underline underline-offset-4 transition-colors"
             >
               Upload different image
             </button>
@@ -89,18 +89,18 @@ export default function ImageUploader({ onImageSelect, onDetect, isDetecting, ha
             />
           </div>
 
-          <div className="w-full max-w-[400px] space-y-6">
+          <div className="w-full max-w-[400px] space-y-4 sm:space-y-6">
             {modeSelectionEnabled && (
               <div className="text-left">
                 <label className="block text-[10px] font-black text-text-secondary mb-2 uppercase tracking-[0.2em] flex items-center gap-2">
                   <Settings size={14} /> Inference Mode
                 </label>
-                <div className="grid grid-cols-3 gap-2 p-1 bg-black/30 rounded-xl border border-panel-border">
+                <div className="grid grid-cols-3 gap-2 p-1 theme-surface-inset rounded-xl border border-panel-border">
                   {['model', 'api', 'hybrid'].map((m) => (
                     <button
                       key={m}
                       onClick={() => setMode(m)}
-                      className={`py-2 px-3 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${mode === m ? 'bg-primary-color text-white shadow-lg' : 'text-text-secondary hover:text-white'}`}
+                      className={`py-2 px-3 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${mode === m ? 'bg-primary-color !text-white shadow-lg' : 'text-text-secondary hover:text-text-primary'}`}
                     >
                       {m}
                     </button>
@@ -114,12 +114,12 @@ export default function ImageUploader({ onImageSelect, onDetect, isDetecting, ha
                 <label className="block text-[10px] font-black text-text-secondary mb-2 uppercase tracking-[0.2em] flex items-center gap-2">
                   <Settings size={14} /> AI Provider
                 </label>
-                <div className="grid grid-cols-2 gap-2 p-1 bg-black/30 rounded-xl border border-panel-border">
+                <div className="grid grid-cols-2 gap-2 p-1 theme-surface-inset rounded-xl border border-panel-border">
                   {['gemini', 'grok'].map((provider) => (
                     <button
                       key={provider}
                       onClick={() => setAiProvider(provider)}
-                      className={`py-2 px-3 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${aiProvider === provider ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-text-secondary hover:text-white'}`}
+                      className={`py-2 px-3 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${aiProvider === provider ? 'bg-indigo-500 !text-white shadow-lg shadow-indigo-500/20' : 'text-text-secondary hover:text-text-primary'}`}
                     >
                       {provider}
                     </button>
@@ -129,11 +129,11 @@ export default function ImageUploader({ onImageSelect, onDetect, isDetecting, ha
             )}
 
             <button 
-              className="w-full py-5 bg-[#059669] text-white rounded-2xl font-black text-xl hover:bg-[#047857] shadow-xl shadow-[#059669]/20 transition-all flex items-center justify-center gap-4 disabled:opacity-50 active:scale-95" 
+              className="w-full py-4 sm:py-5 bg-primary-color !text-white rounded-2xl font-black text-lg sm:text-xl hover:bg-primary-hover shadow-xl shadow-primary-color/20 transition-all flex items-center justify-center gap-3 sm:gap-4 disabled:opacity-50 active:scale-95" 
               onClick={() => onDetect(mode)} 
               disabled={isDetecting}
             >
-              <Camera size={28} className="stroke-[2.5]" />
+              <Camera size={24} className="stroke-[2.5]" />
               {isDetecting ? 'DIAGNOSING...' : 'Analyze Plant Disease'}
             </button>
           </div>

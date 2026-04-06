@@ -58,79 +58,88 @@ const AppLayout = ({ children }) => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto p-4 md:p-8 w-full flex-1 flex flex-col">
-      <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 animate-fade-in-down gap-4">
-        <div>
-          <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-br from-primary-color to-accent-color bg-clip-text text-transparent mb-1">AgriShield AI</h1>
-          <p className="text-text-secondary text-sm md:text-lg">SaaS Plant Protection & Disease Management System</p>
+    <div className="max-w-[1200px] mx-auto px-3 sm:px-4 md:px-8 py-4 md:py-8 w-full flex-1 flex flex-col">
+      {/* ── Header ── */}
+      <header className="flex flex-col gap-4 mb-6 md:mb-8 animate-fade-in-down">
+        {/* Row 1: Brand + Actions */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold bg-gradient-to-br from-primary-color to-accent-color bg-clip-text text-transparent mb-0.5 truncate">AgriShield AI</h1>
+            <p className="text-text-secondary text-xs sm:text-sm md:text-lg truncate">SaaS Plant Protection & Disease Management</p>
+          </div>
+
+          <div className="flex gap-2 sm:gap-3 items-center shrink-0">
+            {/* Language Selector */}
+            <div className="relative group">
+               <div className="bg-panel-bg border border-panel-border backdrop-blur-xl px-2 sm:px-3 py-2 rounded-xl sm:rounded-2xl flex items-center gap-1.5 sm:gap-2 cursor-pointer hover:bg-surface-hover transition-all text-text-primary">
+                 <Globe size={16} className="text-primary-color shrink-0" />
+                 <select 
+                   value={language}
+                   onChange={(e) => setLanguage(e.target.value)}
+                   className="bg-transparent text-xs sm:text-sm font-black uppercase tracking-[0.1em] outline-none cursor-pointer appearance-none text-text-primary pr-1 max-w-[60px] sm:max-w-none"
+                 >
+                   <option value="en">EN</option>
+                   <option value="hi">HI</option>
+                   <option value="mr">MR</option>
+                 </select>
+               </div>
+            </div>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-panel-bg border border-panel-border backdrop-blur-md flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg text-text-primary"
+            >
+              {theme === 'dark' ? <Sun size={18} className="text-yellow-400" /> : <Moon size={18} className="text-indigo-500" />}
+            </button>
+            
+            {/* Logout */}
+            <button
+              onClick={handleLogout}
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg hover:bg-red-500 hover:!text-white"
+              title="Log Out"
+            >
+              <LogOut size={18} />
+            </button>
+          </div>
         </div>
 
-        <div className="flex gap-4 items-center">
-          {/* Active Farm Display */}
-          <div className="bg-white/5 border border-white/10 px-4 py-2 rounded-xl flex items-center gap-3">
-             <Tractor size={18} className="text-primary-color" />
-             <div className="flex flex-col">
-               <span className="text-[10px] uppercase tracking-wider text-text-secondary font-bold">Active Farm</span>
-               <span className="text-sm font-black text-white">{activeFarmId ? `Farm [${activeFarmId.substring(0,6)}]` : 'No Farm Selected'}</span>
+        {/* Row 2: Active Farm (collapsible on mobile) */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="theme-badge border px-3 py-2 rounded-xl flex items-center gap-2 sm:gap-3 text-sm">
+             <Tractor size={16} className="text-primary-color shrink-0" />
+             <div className="flex flex-col min-w-0">
+               <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-text-secondary font-bold">Active Farm</span>
+               <span className="text-xs sm:text-sm font-black text-text-primary truncate">{activeFarmId ? `Farm [${activeFarmId.substring(0,6)}]` : 'No Farm'}</span>
              </div>
-             <button onClick={() => navigate('/farms')} className="ml-2 text-[10px] bg-primary-color px-2 py-1 rounded-md text-white font-bold tracking-widest hover:bg-emerald-500 uppercase">Change</button>
+             <button onClick={() => navigate('/farms')} className="ml-1 text-[9px] sm:text-[10px] bg-primary-color px-2 py-1 rounded-md !text-white font-bold tracking-widest hover:bg-emerald-500 uppercase shrink-0">Change</button>
           </div>
-
-          <div className="relative group">
-             <div className="bg-panel-bg/40 border border-white/20 backdrop-blur-xl px-4 py-2.5 rounded-2xl flex items-center gap-3 cursor-pointer hover:bg-white/10 transition-all text-white shadow-[0_0_15px_rgba(16,185,129,0.15)] group-hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-                <Globe size={18} className="text-primary-color group-hover:animate-pulse" />
-                <select 
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="bg-transparent text-sm font-black uppercase tracking-[0.1em] outline-none cursor-pointer appearance-none text-white pr-2"
-                >
-                  <option value="en" className="text-black bg-white">English (EN)</option>
-                  <option value="hi" className="text-black bg-white">हिंदी (HI)</option>
-                  <option value="mr" className="text-black bg-white">मराठी (MR)</option>
-                </select>
-             </div>
-          </div>
-
-          <button
-            onClick={toggleTheme}
-            className="w-12 h-12 rounded-xl bg-panel-bg border border-panel-border backdrop-blur-md flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg text-white"
-          >
-            {theme === 'dark' ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} className="text-indigo-500" />}
-          </button>
-          
-          <button
-            onClick={handleLogout}
-            className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg hover:bg-red-500 hover:text-white"
-            title="Log Out"
-          >
-            <LogOut size={20} />
-          </button>
         </div>
       </header>
 
-      {/* Nav */}
-      <nav className="flex gap-2 p-1.5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 mb-10 shadow-xl w-fit mx-auto flex-wrap justify-center">
+      {/* ── Navigation ── */}
+      <nav className="flex gap-1 sm:gap-2 p-1 sm:p-1.5 bg-surface-hover backdrop-blur-xl rounded-xl sm:rounded-2xl border border-panel-border mb-6 md:mb-10 shadow-xl overflow-x-auto mobile-nav-scroll">
         {tabs.map(({ path, label, icon }) => {
           const isActive = location.pathname.startsWith(path);
           return (
             <button
               key={path}
               onClick={() => navigate(path)}
-              className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
+              className={`flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 whitespace-nowrap shrink-0 ${
                 isActive
-                  ? 'bg-primary-color text-white shadow-lg shadow-primary-color/20 scale-[1.02]'
-                  : 'text-text-secondary hover:text-white hover:bg-white/5'
+                  ? 'bg-primary-color !text-white shadow-lg shadow-primary-color/20 scale-[1.02]'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
               }`}
             >
               {icon}
-              <span>{label}</span>
+              <span className="hidden xs:inline sm:inline">{label}</span>
             </button>
           );
         })}
       </nav>
 
       {/* Content */}
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         {children}
       </div>
       

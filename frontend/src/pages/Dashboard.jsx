@@ -10,39 +10,15 @@ import api from '../config/api'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 
-// ─── Sensor Card ────────────────────────────────────────────
-function SensorCard({ icon, label, value, unit, color, isOnline }) {
-  return (
-    <div className="relative group bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col items-center text-center hover:border-white/20 hover:bg-white/[0.07] transition-all duration-300 overflow-hidden">
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `radial-gradient(circle at 50% 0%, ${color}15, transparent 70%)` }}></div>
-      <div className="relative z-10 w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: `${color}15`, color }}>
-        {icon}
-      </div>
-      <p className="relative z-10 text-[9px] uppercase tracking-[0.2em] text-text-secondary font-black mb-1.5">{label}</p>
-      <p className="relative z-10 text-2xl font-black text-white">
-        {value !== null && value !== undefined ? value : '—'}
-        {unit && value !== null && value !== undefined && <span className="text-sm font-medium text-text-secondary ml-0.5">{unit}</span>}
-      </p>
-      <span className={`relative z-10 inline-flex items-center gap-1 text-[7px] font-black uppercase tracking-widest mt-2 px-2 py-0.5 rounded-full border ${
-        isOnline
-          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25'
-          : 'bg-red-500/15 text-red-400 border-red-500/25'
-      }`}>
-        <Server size={8} /> SENSOR
-      </span>
-    </div>
-  )
-}
-
 // ─── Weather Card ───────────────────────────────────────────
 function WeatherInfoCard({ icon, label, value, unit, color }) {
   return (
-    <div className="bg-white/5 border border-white/8 rounded-xl p-4 flex flex-col items-center text-center">
-      <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-2" style={{ backgroundColor: `${color}15`, color }}>
+    <div className="theme-surface border border-panel-border rounded-xl p-3 sm:p-4 flex flex-col items-center text-center">
+      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center mb-2" style={{ backgroundColor: `${color}15`, color }}>
         {icon}
       </div>
       <p className="text-[8px] uppercase tracking-[0.2em] text-text-secondary font-bold mb-1">{label}</p>
-      <p className="text-lg font-black text-white">{value}{unit && <span className="text-xs font-medium text-text-secondary ml-0.5">{unit}</span>}</p>
+      <p className="text-base sm:text-lg font-black text-text-primary">{value}{unit && <span className="text-xs font-medium text-text-secondary ml-0.5">{unit}</span>}</p>
     </div>
   )
 }
@@ -52,18 +28,18 @@ function ModuleCard({ icon, title, description, gradient, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="group relative bg-white/5 border border-white/10 rounded-3xl p-8 text-left hover:border-white/20 transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] overflow-hidden cursor-pointer w-full"
+      className="group relative theme-surface border border-panel-border rounded-3xl p-6 sm:p-8 text-left hover:border-primary-color/20 transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] overflow-hidden cursor-pointer w-full"
     >
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700" style={{ background: gradient }}></div>
       <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-2 group-hover:translate-x-0">
-        <ArrowRight size={24} className="text-white/40" />
+        <ArrowRight size={24} className="text-text-secondary" />
       </div>
       <div className="relative z-10">
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 text-white shadow-xl" style={{ background: gradient }}>
+        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-4 sm:mb-5 !text-white shadow-xl" style={{ background: gradient }}>
           {icon}
         </div>
-        <h3 className="text-xl font-black text-white mb-2">{title}</h3>
-        <p className="text-text-secondary text-sm leading-relaxed">{description}</p>
+        <h3 className="text-lg sm:text-xl font-black text-text-primary mb-2">{title}</h3>
+        <p className="text-text-secondary text-xs sm:text-sm leading-relaxed">{description}</p>
       </div>
     </button>
   )
@@ -91,7 +67,6 @@ export default function Dashboard() {
 
   // ── Fetch latest IoT data ──
   const fetchTelemetry = async () => {
-    // Temporarily ignore activeFarmId check so all users see global ESP32 data.
     setIotLoading(true)
     try {
       const response = await api.get(`/iot-data/latest?farm_id=${activeFarmId || 'global'}`)
@@ -176,75 +151,75 @@ export default function Dashboard() {
   })()
 
   return (
-    <div className="w-full max-w-5xl mx-auto animate-fade-in flex flex-col gap-8 pb-16">
+    <div className="w-full max-w-5xl mx-auto animate-fade-in flex flex-col gap-6 sm:gap-8 pb-16">
 
       {/* ═══ Hero Banner ═══ */}
       <div className="text-center">
-        <div className="inline-flex items-center gap-2 bg-primary-color/10 text-primary-color px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-4">
+        <div className="inline-flex items-center gap-2 bg-primary-color/10 text-primary-color px-3 sm:px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-3 sm:mb-4">
           <Activity size={14} className="animate-pulse" />
           Live IoT Station
         </div>
-        <h2 className="text-3xl md:text-4xl font-black text-white mb-2 leading-tight">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-text-primary mb-2 leading-tight">
           Hardware Telemetry
         </h2>
-        <p className="text-text-secondary text-sm max-w-xl mx-auto">
+        <p className="text-text-secondary text-xs sm:text-sm max-w-xl mx-auto">
           Real-time agricultural monitoring via ESP32 sensors
         </p>
       </div>
 
       {/* ═══ Section 1: IoT Sensor Telemetry ═══ */}
-      <div className="glass-panel p-6 md:p-8 rounded-[28px] border border-white/10">
-        <div className="flex items-center justify-between mb-6">
+      <div className="glass-panel p-4 sm:p-6 md:p-8 rounded-[20px] sm:rounded-[28px] border border-panel-border">
+        <div className="flex items-center justify-between mb-4 sm:mb-6 gap-3 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-              <Cpu size={20} className="text-emerald-400" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+              <Cpu size={18} className="text-emerald-400" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-white">IoT Sensor Station</h3>
-              <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">ESP32 Live Telemetry</p>
+              <h3 className="text-base sm:text-lg font-black text-text-primary">IoT Sensor Station</h3>
+              <p className="text-[9px] sm:text-[10px] text-text-secondary uppercase tracking-widest font-bold">ESP32 Live Telemetry</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {isOnline ? (
-              <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+              <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 sm:px-3 py-1.5 rounded-full">
                 <Wifi size={12} /> Online
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-full">
+              <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 px-2 sm:px-3 py-1.5 rounded-full">
                 <WifiOff size={12} /> Offline
               </span>
             )}
             <button 
               onClick={handleSaveData} 
               disabled={!telemetry || iotError}
-              className="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary-color/10 hover:bg-primary-color/20 text-primary-color rounded-xl font-bold text-xs transition-all border border-primary-color/20"
+              className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary-color/10 hover:bg-primary-color/20 text-primary-color rounded-xl font-bold text-xs transition-all border border-primary-color/20"
             >
               <Layers size={14} /> Save Data
             </button>
-            <button onClick={fetchTelemetry} className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all">
+            <button onClick={fetchTelemetry} className="w-9 h-9 rounded-xl theme-surface border border-panel-border flex items-center justify-center hover:bg-surface-hover transition-all">
               <RefreshCw size={14} className={`text-text-secondary ${iotLoading ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
 
         {iotError && !telemetry ? (
-          <div className="bg-red-500/10 text-red-400 p-5 rounded-2xl flex items-center gap-3 font-semibold border border-red-500/20 text-sm">
+          <div className="bg-red-500/10 text-red-400 p-4 sm:p-5 rounded-2xl flex items-center gap-3 font-semibold border border-red-500/20 text-sm">
             <AlertTriangle size={18} /> {iotError}
           </div>
         ) : iotLoading && !telemetry ? (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="animate-pulse bg-white/5 rounded-2xl h-32 border border-white/5"></div>
+              <div key={i} className="animate-pulse theme-surface rounded-2xl h-28 sm:h-32 border border-panel-border"></div>
             ))}
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
               {[
-                { icon: <Thermometer size={22} />, label: 'Temperature', value: telemetry?.temperature, unit: '°C', color: '#ef4444' },
-                { icon: <Droplets size={22} />, label: 'Humidity', value: telemetry?.humidity, unit: '%', color: '#3b82f6' },
+                { icon: <Thermometer size={20} />, label: 'Temperature', value: telemetry?.temperature, unit: '°C', color: '#ef4444' },
+                { icon: <Droplets size={20} />, label: 'Humidity', value: telemetry?.humidity, unit: '%', color: '#3b82f6' },
                 { 
-                  icon: <Layers size={22} />, 
+                  icon: <Layers size={20} />, 
                   label: 'Soil Moisture', 
                   value: telemetry?.soil_moisture !== null && telemetry?.soil_moisture !== undefined 
                     ? telemetry.soil_moisture 
@@ -253,23 +228,23 @@ export default function Dashboard() {
                   color: '#f59e0b' 
                 },
                 { 
-                  icon: <Sun size={22} />, 
-                  label: 'Light (Brightness)', 
+                  icon: <Sun size={20} />, 
+                  label: 'Light', 
                   value: telemetry?.light_intensity !== null && telemetry?.light_intensity !== undefined ? telemetry.light_intensity : 'N/A', 
                   unit: telemetry?.light_intensity !== null && telemetry?.light_intensity !== undefined ? 'Lux' : '', 
                   color: '#eab308'
                 },
-                { icon: <CloudRain size={22} />, label: 'Rain Status', value: telemetry?.rain_status ? 'YES' : 'NO', unit: '', color: telemetry?.rain_status ? '#06b6d4' : '#6b7280' },
+                { icon: <CloudRain size={20} />, label: 'Rain', value: telemetry?.rain_status ? 'YES' : 'NO', unit: '', color: telemetry?.rain_status ? '#06b6d4' : '#6b7280' },
               ].map(({ icon, label, value, unit, color }) => (
-                <div key={label} className="relative group bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col items-center text-center hover:border-white/20 hover:bg-white/[0.07] transition-all duration-300 overflow-hidden">
+                <div key={label} className="relative group theme-surface border border-panel-border rounded-2xl p-3 sm:p-5 flex flex-col items-center text-center hover:border-primary-color/20 transition-all duration-300 overflow-hidden">
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `radial-gradient(circle at 50% 0%, ${color}15, transparent 70%)` }}></div>
-                  <div className="relative z-10 w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: `${color}15`, color }}>
+                  <div className="relative z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center mb-2 sm:mb-3" style={{ backgroundColor: `${color}15`, color }}>
                     {icon}
                   </div>
-                  <p className="relative z-10 text-[9px] uppercase tracking-[0.2em] text-text-secondary font-black mb-1.5">{label}</p>
-                  <p className="relative z-10 text-2xl font-black text-white">
+                  <p className="relative z-10 text-[8px] sm:text-[9px] uppercase tracking-[0.2em] text-text-secondary font-black mb-1">{label}</p>
+                  <p className="relative z-10 text-xl sm:text-2xl font-black text-text-primary">
                     {value !== null && value !== undefined ? value : '—'}
-                    {unit && value !== null && value !== undefined && <span className="text-sm font-medium text-text-secondary ml-0.5">{unit}</span>}
+                    {unit && value !== null && value !== undefined && <span className="text-xs sm:text-sm font-medium text-text-secondary ml-0.5">{unit}</span>}
                   </p>
                   <span className="relative z-10 inline-flex items-center gap-1 text-[7px] font-black uppercase tracking-widest mt-2 px-2 py-0.5 rounded-full border bg-emerald-500/15 text-emerald-400 border-emerald-500/25">
                     <Server size={8} /> SENSOR
@@ -280,7 +255,6 @@ export default function Dashboard() {
             {telemetry?.timestamp && (() => {
               try {
                 let d;
-                // Check if timestamp is a string vs already a Date object
                 if (typeof telemetry.timestamp === 'string') {
                   d = new Date(telemetry.timestamp.replace(' ', 'T') + (telemetry.timestamp.endsWith('Z') ? '' : 'Z'));
                 } else {
@@ -291,7 +265,7 @@ export default function Dashboard() {
                   const dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
                   const timeStr = d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
                   return (
-                    <p className="text-[10px] text-text-secondary text-right mt-3 font-medium flex items-center justify-end gap-1.5 uppercase tracking-widest">
+                    <p className="text-[9px] sm:text-[10px] text-text-secondary text-right mt-3 font-medium flex items-center justify-end gap-1.5 uppercase tracking-widest">
                       <RefreshCw size={10} className={iotLoading ? 'animate-spin' : ''} />
                       Last updated: {dateStr} / {timeStr}
                     </p>
@@ -305,19 +279,19 @@ export default function Dashboard() {
       </div>
 
       {/* ═══ Section 2: Weather Data (On-Demand) ═══ */}
-      <div className="glass-panel p-6 md:p-8 rounded-[28px] border border-white/10">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center">
-            <Cloud size={20} className="text-cyan-400" />
+      <div className="glass-panel p-4 sm:p-6 md:p-8 rounded-[20px] sm:rounded-[28px] border border-panel-border">
+        <div className="flex items-center gap-3 mb-4 sm:mb-6">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center">
+            <Cloud size={18} className="text-cyan-400" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-white">Weather Station</h3>
-            <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">OpenWeatherMap — Click to Fetch</p>
+            <h3 className="text-base sm:text-lg font-black text-text-primary">Weather Station</h3>
+            <p className="text-[9px] sm:text-[10px] text-text-secondary uppercase tracking-widest font-bold">OpenWeatherMap — Click to Fetch</p>
           </div>
         </div>
 
         {/* Location + Fetch */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6">
           <div className="flex-1 relative">
             <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
             <input
@@ -325,26 +299,29 @@ export default function Dashboard() {
               value={weatherLocation}
               onChange={(e) => setWeatherLocation(e.target.value)}
               placeholder="Enter city name (e.g. Mumbai, Delhi)..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white text-sm font-medium placeholder:text-white/20 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all"
+              className="w-full theme-input border rounded-xl pl-10 pr-4 py-3 text-sm font-medium focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all"
             />
           </div>
-          <button
-            type="button"
-            onClick={handleGetGps}
-            disabled={isGettingGps}
-            className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/10 text-text-secondary rounded-xl font-bold text-xs transition-all hover:bg-white/10 hover:text-white disabled:opacity-50 shrink-0"
-          >
-            {isGettingGps ? <RefreshCw size={14} className="animate-spin" /> : <Navigation size={14} />}
-            GPS
-          </button>
-          <button
-            onClick={handleFetchWeather}
-            disabled={!weatherLocation.trim() || weatherLoading}
-            className="flex items-center gap-2 px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95 shadow-lg shadow-cyan-500/20 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-          >
-            {weatherLoading ? <RefreshCw size={16} className="animate-spin" /> : <Cloud size={16} />}
-            Get Current Weather
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleGetGps}
+              disabled={isGettingGps}
+              className="flex items-center gap-2 px-3 sm:px-4 py-3 theme-surface border border-panel-border text-text-secondary rounded-xl font-bold text-xs transition-all hover:bg-surface-hover hover:text-text-primary disabled:opacity-50 shrink-0"
+            >
+              {isGettingGps ? <RefreshCw size={14} className="animate-spin" /> : <Navigation size={14} />}
+              GPS
+            </button>
+            <button
+              onClick={handleFetchWeather}
+              disabled={!weatherLocation.trim() || weatherLoading}
+              className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-cyan-500 hover:bg-cyan-600 !text-white rounded-xl font-bold text-xs sm:text-sm transition-all hover:scale-105 active:scale-95 shadow-lg shadow-cyan-500/20 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+            >
+              {weatherLoading ? <RefreshCw size={16} className="animate-spin" /> : <Cloud size={16} />}
+              <span className="hidden sm:inline">Get Current Weather</span>
+              <span className="sm:hidden">Fetch</span>
+            </button>
+          </div>
         </div>
 
         {weatherError && (
@@ -359,48 +336,48 @@ export default function Dashboard() {
               <CheckCircle2 size={14} />
               Live Weather — {weather.location_name}, {weather.country}
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              <WeatherInfoCard icon={<Thermometer size={18} />} label="Temperature" value={weather.temperature} unit="°C" color="#ef4444" />
-              <WeatherInfoCard icon={<Droplets size={18} />} label="Humidity" value={weather.humidity} unit="%" color="#3b82f6" />
-              <WeatherInfoCard icon={<CloudRain size={18} />} label="Rainfall" value={weather.rainfall} unit="mm" color="#06b6d4" />
-              <WeatherInfoCard icon={<Wind size={18} />} label="Wind" value={weather.wind_speed} unit="m/s" color="#8b5cf6" />
-              <WeatherInfoCard icon={<Thermometer size={18} />} label="Feels Like" value={weather.feels_like} unit="°C" color="#f97316" />
-              <WeatherInfoCard icon={<Eye size={18} />} label="Visibility" value={weather.visibility ? (weather.visibility / 1000).toFixed(1) : 'N/A'} unit="km" color="#10b981" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
+              <WeatherInfoCard icon={<Thermometer size={16} />} label="Temperature" value={weather.temperature} unit="°C" color="#ef4444" />
+              <WeatherInfoCard icon={<Droplets size={16} />} label="Humidity" value={weather.humidity} unit="%" color="#3b82f6" />
+              <WeatherInfoCard icon={<CloudRain size={16} />} label="Rainfall" value={weather.rainfall} unit="mm" color="#06b6d4" />
+              <WeatherInfoCard icon={<Wind size={16} />} label="Wind" value={weather.wind_speed} unit="m/s" color="#8b5cf6" />
+              <WeatherInfoCard icon={<Thermometer size={16} />} label="Feels Like" value={weather.feels_like} unit="°C" color="#f97316" />
+              <WeatherInfoCard icon={<Eye size={16} />} label="Visibility" value={weather.visibility ? (weather.visibility / 1000).toFixed(1) : 'N/A'} unit="km" color="#10b981" />
             </div>
             <p className="text-text-secondary text-xs mt-3 capitalize text-center">☁️ {weather.description}</p>
           </div>
         ) : !weatherLoading && (
-          <div className="text-center py-8 text-text-secondary">
-            <Cloud size={40} className="mx-auto mb-3 opacity-20" />
-            <p className="text-sm font-medium">Enter a location and click "Get Current Weather" to load data</p>
+          <div className="text-center py-6 sm:py-8 text-text-secondary">
+            <Cloud size={36} className="mx-auto mb-3 opacity-20" />
+            <p className="text-xs sm:text-sm font-medium">Enter a location and click "Get Current Weather" to load data</p>
           </div>
         )}
       </div>
 
       {/* ═══ Section 3: Module Navigation Cards ═══ */}
       <div>
-        <div className="flex items-center gap-3 mb-6 px-1">
+        <div className="flex items-center gap-3 mb-4 sm:mb-6 px-1">
           <BarChart3 size={18} className="text-primary-color" />
-          <h3 className="text-lg font-black text-white">Modules</h3>
+          <h3 className="text-base sm:text-lg font-black text-text-primary">Modules</h3>
           <p className="text-text-secondary text-xs">— Select a module to get started</p>
         </div>
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4 sm:gap-6">
           <ModuleCard
-            icon={<Radio size={28} />}
+            icon={<Radio size={24} />}
             title="IoT Sensor Module"
             description="Live hardware telemetry, threshold alerts, and AI-powered analysis using real-time ESP32 sensor data."
             gradient="linear-gradient(135deg, #059669, #10b981)"
             onClick={() => navigate('/iot')}
           />
           <ModuleCard
-            icon={<Camera size={28} />}
+            icon={<Camera size={24} />}
             title="Plant Scan Module"
             description="Upload a leaf image for instant disease detection using ML models, Gemini AI, or Grok Vision."
             gradient="linear-gradient(135deg, #7c3aed, #a78bfa)"
             onClick={() => navigate('/plantscan')}
           />
           <ModuleCard
-            icon={<Activity size={28} />}
+            icon={<Activity size={24} />}
             title="Prediction Engine"
             description="Forecast pest & disease risk with location-aware weather data, multi-model AI, and ranked threat analysis."
             gradient="linear-gradient(135deg, #2563eb, #3b82f6)"
