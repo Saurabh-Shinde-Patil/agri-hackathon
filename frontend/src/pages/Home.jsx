@@ -5,8 +5,10 @@ import DetectionResult from '../components/DetectionResult'
 import api from '../config/api'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
+import { useSettings } from '../context/SettingsContext'
 
 export default function Home() { const { activeFarmId } = useAuth(); 
+  const { modeSelectionEnabled } = useSettings();
   const [selectedImage, setSelectedImage] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [isDetecting, setIsDetecting] = useState(false)
@@ -95,25 +97,27 @@ export default function Home() { const { activeFarmId } = useAuth();
         <div className="w-full animate-fade-in space-y-6">
           {/* Persistent Mode Selector Bar */}
           <div className="flex flex-wrap items-center justify-between gap-4 bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-xl">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Settings size={16} className="text-primary-color" />
-                <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">Inference Mode</span>
+            {modeSelectionEnabled && (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Settings size={16} className="text-primary-color" />
+                  <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">Inference Mode</span>
+                </div>
+                <div className="flex gap-1 p-1 bg-black/30 rounded-xl border border-panel-border">
+                  {['model', 'api', 'hybrid'].map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setMode(m)}
+                      className={`py-1.5 px-4 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${mode === m ? 'bg-primary-color text-white shadow-lg' : 'text-text-secondary hover:text-white'}`}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex gap-1 p-1 bg-black/30 rounded-xl border border-panel-border">
-                {['model', 'api', 'hybrid'].map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setMode(m)}
-                    className={`py-1.5 px-4 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${mode === m ? 'bg-primary-color text-white shadow-lg' : 'text-text-secondary hover:text-white'}`}
-                  >
-                    {m}
-                  </button>
-                ))}
-              </div>
-            </div>
+            )}
 
-            {(mode === 'api' || mode === 'hybrid') && (
+            {modeSelectionEnabled && (mode === 'api' || mode === 'hybrid') && (
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Settings size={16} className="text-primary-color" />

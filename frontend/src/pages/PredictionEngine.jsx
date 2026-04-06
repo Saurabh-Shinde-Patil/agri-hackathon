@@ -8,6 +8,7 @@ import {
 import api from '../config/api'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
+import { useSettings } from '../context/SettingsContext'
 
 // ─── Crop Options ──────────────────────────────────────────────
 const CROP_OPTIONS = [
@@ -113,6 +114,7 @@ function RankedThreatCard({ threat, color }) {
 export default function PredictionEngine() {
   const { activeFarmId } = useAuth();
   const { language, t } = useLanguage();
+  const { modeSelectionEnabled } = useSettings();
   
   // ── Form State ──
   const [temperature, setTemperature] = useState('')
@@ -284,24 +286,26 @@ export default function PredictionEngine() {
 
         {/* Mode Selector Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-xl">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Settings size={16} className="text-primary-color" />
-              <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">Prediction Mode</span>
+          {modeSelectionEnabled && (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Settings size={16} className="text-primary-color" />
+                <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">Prediction Mode</span>
+              </div>
+              <div className="flex gap-1 p-1 bg-black/30 rounded-xl border border-panel-border">
+                {['model', 'api', 'hybrid'].map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setMode(m)}
+                    className={`py-1.5 px-4 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${mode === m ? 'bg-primary-color text-white shadow-lg' : 'text-text-secondary hover:text-white'}`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex gap-1 p-1 bg-black/30 rounded-xl border border-panel-border">
-              {['model', 'api', 'hybrid'].map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setMode(m)}
-                  className={`py-1.5 px-4 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${mode === m ? 'bg-primary-color text-white shadow-lg' : 'text-text-secondary hover:text-white'}`}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-          </div>
-          {(mode === 'api' || mode === 'hybrid') && (
+          )}
+          {modeSelectionEnabled && (mode === 'api' || mode === 'hybrid') && (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <Settings size={16} className="text-primary-color" />
@@ -591,28 +595,30 @@ export default function PredictionEngine() {
       <form onSubmit={handleSubmit} className="space-y-8">
 
         {/* ═══ Mode Selector ═══ */}
-        <div className="glass-panel p-6 rounded-3xl border border-white/10">
-          <label className="block text-[10px] font-black text-text-secondary mb-3 uppercase tracking-[0.2em] flex items-center gap-2">
-            <Settings size={14} /> Prediction Mode
-          </label>
-          <div className="grid grid-cols-3 gap-2 p-1 bg-black/30 rounded-xl border border-panel-border max-w-md">
-            {[
-              { key: 'model', label: 'ML Model', desc: 'Random Forest' },
-              { key: 'api', label: 'Gemini AI', desc: 'AI Prediction' },
-              { key: 'hybrid', label: 'Hybrid', desc: 'ML + Gemini' },
-            ].map(({ key, label, desc }) => (
-              <button key={key} type="button" onClick={() => setMode(key)}
-                className={`py-3 px-3 rounded-lg transition-all text-center ${mode === key
-                  ? 'bg-primary-color text-white shadow-lg'
-                  : 'text-text-secondary hover:text-white'
-                }`}
-              >
-                <span className="block text-[10px] font-bold uppercase tracking-widest">{label}</span>
-                <span className="block text-[8px] opacity-60 mt-0.5">{desc}</span>
-              </button>
-            ))}
+        {modeSelectionEnabled && (
+          <div className="glass-panel p-6 rounded-3xl border border-white/10">
+            <label className="block text-[10px] font-black text-text-secondary mb-3 uppercase tracking-[0.2em] flex items-center gap-2">
+              <Settings size={14} /> Prediction Mode
+            </label>
+            <div className="grid grid-cols-3 gap-2 p-1 bg-black/30 rounded-xl border border-panel-border max-w-md">
+              {[
+                { key: 'model', label: 'ML Model', desc: 'Random Forest' },
+                { key: 'api', label: 'Gemini AI', desc: 'AI Prediction' },
+                { key: 'hybrid', label: 'Hybrid', desc: 'ML + Gemini' },
+              ].map(({ key, label, desc }) => (
+                <button key={key} type="button" onClick={() => setMode(key)}
+                  className={`py-3 px-3 rounded-lg transition-all text-center ${mode === key
+                    ? 'bg-primary-color text-white shadow-lg'
+                    : 'text-text-secondary hover:text-white'
+                  }`}
+                >
+                  <span className="block text-[10px] font-bold uppercase tracking-widest">{label}</span>
+                  <span className="block text-[8px] opacity-60 mt-0.5">{desc}</span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* ═══ Location Section (Always visible) ═══ */}
         <div className="glass-panel p-6 rounded-3xl border border-white/10">
@@ -663,7 +669,7 @@ export default function PredictionEngine() {
 
         {/* ═══ Required Inputs Section ═══ */}
         <div>
-          {(mode === 'api' || mode === 'hybrid') && (
+          {modeSelectionEnabled && (mode === 'api' || mode === 'hybrid') && (
             <div className="mb-8 animate-fade-in">
               <label className="block text-[10px] font-black text-text-secondary mb-3 uppercase tracking-[0.2em] flex items-center gap-2">
                  AI Provider

@@ -9,6 +9,7 @@ const weatherRoutes = require('./routes/weatherRoutes');
 const farmRoutes = require('./routes/farmRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const chatbotRoutes = require('./routes/chatbotRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
 
 const app = express();
 
@@ -41,6 +42,7 @@ class App {
         this.app.use('/api/farms', farmRoutes);
         this.app.use('/api/admin', adminRoutes);
         this.app.use('/api/chatbot', chatbotRoutes);
+        this.app.use('/api/settings', settingsRoutes);
     }
 }
 

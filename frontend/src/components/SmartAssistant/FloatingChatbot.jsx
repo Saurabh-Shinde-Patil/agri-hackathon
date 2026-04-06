@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Mic, Send, Bot, User, Settings, Volume2, VolumeX, MicOff } from 'lucide-react';
 import api from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 
 export default function FloatingChatbot() {
   const { activeFarmId } = useAuth();
+  const { modeSelectionEnabled } = useSettings();
   
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -161,18 +163,20 @@ export default function FloatingChatbot() {
           </div>
 
           {/* Provider Selector */}
-          <div className="px-4 py-2 bg-black/20 border-b border-white/5 flex items-center gap-2">
-            <Settings size={12} className="text-text-secondary" />
-            <select 
-              value={aiProvider} 
-              onChange={(e) => setAiProvider(e.target.value)}
-              className="bg-transparent text-xs text-text-secondary font-bold uppercase tracking-widest outline-none py-1 cursor-pointer w-full"
-            >
-              <option value="gemini">Google Gemini AI</option>
-              <option value="grok">xAI Grok-2</option>
-              <option value="together">Together AI (Llama)</option>
-            </select>
-          </div>
+          {modeSelectionEnabled && (
+            <div className="px-4 py-2 bg-black/20 border-b border-white/5 flex items-center gap-2">
+              <Settings size={12} className="text-text-secondary" />
+              <select 
+                value={aiProvider} 
+                onChange={(e) => setAiProvider(e.target.value)}
+                className="bg-transparent text-xs text-text-secondary font-bold uppercase tracking-widest outline-none py-1 cursor-pointer w-full"
+              >
+                <option value="gemini">Google Gemini AI</option>
+                <option value="grok">xAI Grok-2</option>
+                <option value="together">Together AI (Llama)</option>
+              </select>
+            </div>
+          )}
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10">

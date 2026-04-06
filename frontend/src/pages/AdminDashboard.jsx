@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Users, Server, Activity, ArrowRight, Loader2, Database, Zap } from 'lucide-react';
+import { Users, Server, Activity, ArrowRight, Loader2, Database, Zap, ToggleLeft, ToggleRight } from 'lucide-react';
 import api from '../config/api';
+import { useSettings } from '../context/SettingsContext';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { modeSelectionEnabled, updateSettings, loadingSettings } = useSettings();
 
   useEffect(() => {
     fetchStats();
@@ -21,19 +23,41 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-primary-color" size={48} /></div>;
+  const handleToggleModeSelection = async () => {
+    try {
+        await updateSettings(!modeSelectionEnabled);
+    } catch (e) {
+        alert("Failed to update global settings.");
+    }
+  };
+
+  if (loading || loadingSettings) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-primary-color" size={48} /></div>;
 
   return (
     <div className="max-w-6xl mx-auto w-full space-y-8 animate-fade-in">
-      <div className="glass-panel p-8 rounded-[40px] flex justify-between items-center bg-gradient-to-r from-accent-color/10 to-transparent border border-accent-color/20">
+      <div className="glass-panel p-8 rounded-[40px] flex justify-between items-center bg-gradient-to-r from-accent-color/10 to-transparent border border-accent-color/20 flex-wrap gap-4">
         <div>
           <h2 className="text-3xl font-black text-white flex items-center gap-3">
              <Server className="text-accent-color" /> SaaS Admin Hub
           </h2>
           <p className="text-text-secondary mt-1">Monitor system performance, user limits, and API usage.</p>
         </div>
-        <div className="bg-accent-color/20 text-accent-color px-4 py-2 rounded-xl font-bold border border-accent-color/30 flex items-center gap-2">
-           <Activity size={18} /> System Online
+        <div className="flex gap-4">
+           {/* Mode Selection Control */}
+           <button 
+              onClick={handleToggleModeSelection}
+              className={`px-4 py-2 rounded-xl font-bold border flex items-center gap-2 transition-all ${
+                 modeSelectionEnabled 
+                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/30' 
+                    : 'bg-white/5 text-text-secondary border-white/10 hover:bg-white/10'
+              }`}
+           >
+              {modeSelectionEnabled ? <ToggleRight size={24} className="text-emerald-500" /> : <ToggleLeft size={24} />}
+              {modeSelectionEnabled ? "Farmer Mode Selection: ENABLED" : "Farmer Mode Selection: DISABLED"}
+           </button>
+           <div className="bg-accent-color/20 text-accent-color px-4 py-2 rounded-xl font-bold border border-accent-color/30 flex items-center gap-2">
+              <Activity size={18} /> System Online
+           </div>
         </div>
       </div>
 

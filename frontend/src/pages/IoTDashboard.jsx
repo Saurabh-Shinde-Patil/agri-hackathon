@@ -8,6 +8,7 @@ import {
   Globe, User, Cloud, Server, ChevronDown, Cpu, Wifi, WifiOff
 } from 'lucide-react'
 import api from '../config/api'
+import { useSettings } from '../context/SettingsContext'
 
 // ─── Risk Level Config ─────────────────────────────────────────
 const RISK_CONFIG = {
@@ -116,6 +117,7 @@ function RankedThreatCard({ threat, color }) {
 export default function IoTDashboard() { 
   const { activeFarmId } = useAuth(); 
   const { language } = useLanguage();
+  const { modeSelectionEnabled } = useSettings();
   const [telemetry, setTelemetry] = useState(null)
   const [isFetching, setIsFetching] = useState(false)
   const [fetchError, setFetchError] = useState(null)
@@ -264,24 +266,26 @@ export default function IoTDashboard() {
         
         {/* Mode Selector Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-xl">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Settings size={16} className="text-primary-color" />
-              <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">Prediction Mode</span>
+          {modeSelectionEnabled && (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Settings size={16} className="text-primary-color" />
+                <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">Prediction Mode</span>
+              </div>
+              <div className="flex gap-1 p-1 bg-black/30 rounded-xl border border-panel-border">
+                {['model', 'api', 'hybrid'].map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setMode(m)}
+                    className={`py-1.5 px-4 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${mode === m ? 'bg-primary-color text-white shadow-lg' : 'text-text-secondary hover:text-white'}`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex gap-1 p-1 bg-black/30 rounded-xl border border-panel-border">
-              {['model', 'api', 'hybrid'].map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setMode(m)}
-                  className={`py-1.5 px-4 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${mode === m ? 'bg-primary-color text-white shadow-lg' : 'text-text-secondary hover:text-white'}`}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-          </div>
-          {(mode === 'api' || mode === 'hybrid') && (
+          )}
+          {modeSelectionEnabled && (mode === 'api' || mode === 'hybrid') && (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <Settings size={16} className="text-primary-color" />
@@ -690,28 +694,32 @@ export default function IoTDashboard() {
       {/* ── Predict Form ── */}
       <form onSubmit={handlePredict} className="space-y-6">
         <div className="glass-panel p-8 rounded-3xl border border-white/10">
-          <label className="block text-[10px] font-black text-text-secondary mb-3 uppercase tracking-[0.2em] flex items-center gap-2">
-            <Settings size={14} /> Prediction Mode
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 p-1 bg-black/30 rounded-xl border border-panel-border max-w-md mb-8">
-            {[
-              { key: 'model', label: 'ML Model', desc: 'Random Forest' },
-              { key: 'api', label: 'Gemini AI', desc: 'AI Prediction' },
-              { key: 'hybrid', label: 'Hybrid', desc: 'ML + Gemini' },
-            ].map(({ key, label, desc }) => (
-              <button key={key} type="button" onClick={() => setMode(key)}
-                className={`py-3 px-3 rounded-lg transition-all text-center ${mode === key
-                  ? 'bg-primary-color text-white shadow-lg'
-                  : 'text-text-secondary hover:text-white'
-                }`}
-              >
-                <span className="block text-[10px] font-bold uppercase tracking-widest">{label}</span>
-                <span className="block text-[8px] opacity-60 mt-0.5">{desc}</span>
-              </button>
-            ))}
-          </div>
+          {modeSelectionEnabled && (
+            <>
+              <label className="block text-[10px] font-black text-text-secondary mb-3 uppercase tracking-[0.2em] flex items-center gap-2">
+                <Settings size={14} /> Prediction Mode
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 p-1 bg-black/30 rounded-xl border border-panel-border max-w-md mb-8">
+                {[
+                  { key: 'model', label: 'ML Model', desc: 'Random Forest' },
+                  { key: 'api', label: 'Gemini AI', desc: 'AI Prediction' },
+                  { key: 'hybrid', label: 'Hybrid', desc: 'ML + Gemini' },
+                ].map(({ key, label, desc }) => (
+                  <button key={key} type="button" onClick={() => setMode(key)}
+                    className={`py-3 px-3 rounded-lg transition-all text-center ${mode === key
+                      ? 'bg-primary-color text-white shadow-lg'
+                      : 'text-text-secondary hover:text-white'
+                    }`}
+                  >
+                    <span className="block text-[10px] font-bold uppercase tracking-widest">{label}</span>
+                    <span className="block text-[8px] opacity-60 mt-0.5">{desc}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
-          {(mode === 'api' || mode === 'hybrid') && (
+          {modeSelectionEnabled && (mode === 'api' || mode === 'hybrid') && (
             <div className="mb-8 animate-fade-in">
               <label className="block text-[10px] font-black text-text-secondary mb-3 uppercase tracking-[0.2em] flex items-center gap-2">
                  <Settings size={14} /> AI Provider

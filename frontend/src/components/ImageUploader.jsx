@@ -1,9 +1,11 @@
 import { useRef, useState } from 'react'
 import { UploadCloud, Camera, Settings, CheckCircle2 } from 'lucide-react'
+import { useSettings } from '../context/SettingsContext'
 
 export default function ImageUploader({ onImageSelect, onDetect, isDetecting, hasImage, previewUrl, mode, setMode, aiProvider, setAiProvider }) {
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef(null)
+  const { modeSelectionEnabled } = useSettings()
 
   const handleDragOver = (e) => {
     e.preventDefault()
@@ -88,24 +90,26 @@ export default function ImageUploader({ onImageSelect, onDetect, isDetecting, ha
           </div>
 
           <div className="w-full max-w-[400px] space-y-6">
-            <div className="text-left">
-              <label className="block text-[10px] font-black text-text-secondary mb-2 uppercase tracking-[0.2em] flex items-center gap-2">
-                <Settings size={14} /> Inference Mode
-              </label>
-              <div className="grid grid-cols-3 gap-2 p-1 bg-black/30 rounded-xl border border-panel-border">
-                {['model', 'api', 'hybrid'].map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setMode(m)}
-                    className={`py-2 px-3 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${mode === m ? 'bg-primary-color text-white shadow-lg' : 'text-text-secondary hover:text-white'}`}
-                  >
-                    {m}
-                  </button>
-                ))}
+            {modeSelectionEnabled && (
+              <div className="text-left">
+                <label className="block text-[10px] font-black text-text-secondary mb-2 uppercase tracking-[0.2em] flex items-center gap-2">
+                  <Settings size={14} /> Inference Mode
+                </label>
+                <div className="grid grid-cols-3 gap-2 p-1 bg-black/30 rounded-xl border border-panel-border">
+                  {['model', 'api', 'hybrid'].map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setMode(m)}
+                      className={`py-2 px-3 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${mode === m ? 'bg-primary-color text-white shadow-lg' : 'text-text-secondary hover:text-white'}`}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {(mode === 'api' || mode === 'hybrid') && (
+            {modeSelectionEnabled && (mode === 'api' || mode === 'hybrid') && (
               <div className="text-left animate-fade-in mt-2">
                 <label className="block text-[10px] font-black text-text-secondary mb-2 uppercase tracking-[0.2em] flex items-center gap-2">
                   <Settings size={14} /> AI Provider
