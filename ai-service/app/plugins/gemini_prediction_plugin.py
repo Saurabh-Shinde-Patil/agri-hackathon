@@ -166,6 +166,8 @@ class GeminiPredictionPlugin(BasePredictionPlugin):
                 elif "```" in content:
                     content = content.replace("```", "").strip()
 
+                print(f"RAW GEMINI CONTENT: {content}")
+
                 start_idx = content.find('{')
                 end_idx = content.rfind('}')
                 if start_idx != -1 and end_idx != -1:

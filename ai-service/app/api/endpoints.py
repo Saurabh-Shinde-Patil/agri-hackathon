@@ -154,6 +154,19 @@ async def predict_pest_risk(request: PredictionRequest):
                     weather_error = f"Could not fetch weather data for '{location}'. Please check the city name or enter values manually."
 
         # ── Validate: still missing after fetch? ──
+        # ── Handle missing Rainfall from Hardware Sensors ──
+        if rainfall is None:
+            if request.rain_status == 1:
+                rainfall = 15.0  # Estimated active rainfall
+                data_sources["rainfall"] = "estimated_from_sensor"
+            elif request.rain_status == 0:
+                rainfall = 0.0
+                data_sources["rainfall"] = "sensor_derived"
+            else:
+                rainfall = 0.0
+                data_sources["rainfall"] = "default_fallback"
+
+        # ── Validate: still missing after fetch? ──
         missing = []
         if temperature is None:
             missing.append("temperature")
@@ -197,6 +210,11 @@ async def predict_pest_risk(request: PredictionRequest):
 
         plugin = _get_prediction_plugin(mode, provider)
         result = plugin.predict(inputs)
+
+        # ── Throw an explicit HTTP error if standalone API mode fails ──
+        # (If hybrid, we let it pass because we still have the ML model fallback)
+        if mode == "api" and "error" in result and result.get("probability") == 0.0:
+            raise HTTPException(status_code=503, detail=result["error"])
 
         # ── Add metadata ──
         result["mode"] = mode

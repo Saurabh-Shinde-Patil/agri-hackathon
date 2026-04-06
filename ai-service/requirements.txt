@@ -6,6 +6,7 @@ Pillow
 pydantic
 requests
 pydantic-settings
-numpy<2
+numpy
 scikit-learn
 joblib
+google-generativeai

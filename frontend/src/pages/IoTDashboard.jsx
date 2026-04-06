@@ -134,16 +134,36 @@ export default function IoTDashboard() {
 
   const fetchTelemetry = async () => {
     setIsFetching(true)
-    // We don't reset fetchError here to avoid UI flicker if previously failed
     try {
-      const response = await api.get(`/iot-data/latest?farm_id=${activeFarmId}`)
+      // Use the new live data endpoint
+      const response = await api.get(`/live-iot-data?farm_id=${activeFarmId}`)
       setTelemetry(response.data)
-      setFetchError(null) // Clear error on success
+      setFetchError(null)
     } catch (err) {
       console.error(err)
       setFetchError('Hardware unreachable. Displaying last known data.')
     } finally {
       setIsFetching(false)
+    }
+  }
+
+  const handleSaveData = async () => {
+    try {
+      await api.post('/save-iot-data')
+      alert('IoT data saved to database successfully!')
+    } catch (err) {
+      console.error(err)
+      alert('Failed to save IoT data.')
+    }
+  }
+
+  const handleSaveAlert = async (alertObj) => {
+    try {
+      await api.post('/save-alert', { alert: alertObj })
+      alert('Alert saved to database!')
+    } catch (err) {
+      console.error(err)
+      alert('Failed to save alert.')
     }
   }
 
@@ -169,26 +189,13 @@ export default function IoTDashboard() {
       const payload = {
         crop_type: cropType,
         plant_age_days: parseInt(plantAge),
-        soil_moisture: telemetry?.soil_moisture ?? 50,
-        temperature: telemetry?.temperature ?? null,
-        humidity: telemetry?.humidity ?? null,
-        rainfall: telemetry?.rain_status ? 10.0 : 0.0,
-        rain_status: telemetry?.rain_status ?? 0,
-        light_intensity: telemetry?.light_intensity ?? null,
         mode: mode,
         ai_provider: aiProvider,
-        location: null, // Since we rely on sensors
-        data_sources: {
-          temperature: telemetry && telemetry.temperature !== undefined ? 'sensor' : 'user',
-          humidity: telemetry && telemetry.humidity !== undefined ? 'sensor' : 'user',
-          soil_moisture: telemetry && telemetry.soil_moisture !== undefined ? 'sensor' : 'user',
-          rainfall: telemetry && telemetry.rain_status !== undefined ? 'sensor' : 'user',
-          crop_type: 'user',
-          plant_age_days: 'user'
-        }
+        language
       }
 
-      const response = await api.post('/predict', { ...payload, farm_id: activeFarmId, language })
+      // Use the new run-analysis endpoint which saves data first
+      const response = await api.post('/run-analysis', { ...payload, farm_id: activeFarmId })
       setResult(response.data)
     } catch (err) {
       console.error(err)
@@ -543,8 +550,13 @@ export default function IoTDashboard() {
               // Check if ESP32 is truly online: data exists, no fetch error, and data is fresh (< 60s old)
               let isOnline = !!telemetry && !fetchError
               if (isOnline && telemetry?.timestamp) {
-                const lastUpdate = new Date(telemetry.timestamp.replace(' ', 'T') + 'Z')
-                const ageSeconds = (Date.now() - lastUpdate.getTime()) / 1000
+                let d;
+                if (typeof telemetry.timestamp === 'string') {
+                  d = new Date(telemetry.timestamp.replace(' ', 'T') + (telemetry.timestamp.endsWith('Z') ? '' : 'Z'));
+                } else {
+                  d = new Date(telemetry.timestamp);
+                }
+                const ageSeconds = (Date.now() - d.getTime()) / 1000
                 if (ageSeconds > 60) isOnline = false
               }
               return isOnline ? (
@@ -557,6 +569,13 @@ export default function IoTDashboard() {
                 </span>
               )
             })()}
+            <button 
+              onClick={handleSaveData} 
+              disabled={!telemetry}
+              className="flex items-center gap-2 px-4 py-2 bg-primary-color/10 hover:bg-primary-color/20 text-primary-color rounded-xl font-bold text-xs transition-all border border-primary-color/20"
+            >
+              <Layers size={14} /> Save Data
+            </button>
             <button onClick={fetchTelemetry} className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all">
               <RefreshCw size={14} className={`text-text-secondary ${isFetching ? 'animate-spin' : ''}`} />
             </button>
@@ -613,20 +632,60 @@ export default function IoTDashboard() {
                 </div>
               ))}
             </div>
-            {telemetry.timestamp && (
-              <p className="text-[10px] text-text-secondary text-right mt-3 font-medium flex items-center justify-end gap-1.5 uppercase tracking-widest">
-                <RefreshCw size={10} className={isFetching ? 'animate-spin' : ''} />
-                Last updated: {(() => {
-                  const d = new Date(telemetry.timestamp.replace(' ', 'T') + 'Z');
+            {telemetry?.timestamp && (() => {
+              try {
+                let d;
+                // Check if timestamp is a string vs already a Date object
+                if (typeof telemetry.timestamp === 'string') {
+                  d = new Date(telemetry.timestamp.replace(' ', 'T') + (telemetry.timestamp.endsWith('Z') ? '' : 'Z'));
+                } else {
+                  d = new Date(telemetry.timestamp);
+                }
+                
+                if (!isNaN(d.getTime())) {
                   const dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
                   const timeStr = d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
-                  return `${dateStr} / ${timeStr}`;
-                })()}
-              </p>
-            )}
+                  return (
+                    <p className="text-[10px] text-text-secondary text-right mt-3 font-medium flex items-center justify-end gap-1.5 uppercase tracking-widest">
+                      <RefreshCw size={10} className={isFetching ? 'animate-spin' : ''} />
+                      Last updated: {dateStr} / {timeStr}
+                    </p>
+                  )
+                }
+              } catch (err) {}
+              return null;
+            })()}
           </>
         )}
       </div>
+
+      {/* ── Live Alerts Section ── */}
+      {telemetry?.alerts && telemetry.alerts.length > 0 && (
+        <div className="glass-panel p-6 rounded-3xl border border-red-500/30 bg-red-500/10 animate-fade-in">
+          <h4 className="text-red-400 font-black tracking-widest text-[10px] uppercase mb-4 flex items-center gap-2">
+            <Zap size={16} /> Live Threshold Alerts (Unsaved)
+          </h4>
+          <div className="space-y-3">
+            {telemetry.alerts.map((alert, i) => (
+              <div key={i} className="flex items-center justify-between p-3 bg-black/20 rounded-2xl border border-white/5">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle size={18} className="text-red-500" />
+                  <div>
+                    <p className="text-white text-sm font-bold">{alert.type}: {alert.message}</p>
+                    <p className="text-[9px] text-text-secondary uppercase tracking-widest font-medium">Severity: {alert.severity}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => handleSaveAlert(alert)}
+                  className="px-4 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-red-500/30 transition-all"
+                >
+                  Save Alert
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Predict Form ── */}
       <form onSubmit={handlePredict} className="space-y-6">
