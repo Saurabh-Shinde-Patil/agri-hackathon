@@ -57,7 +57,8 @@ class YOLOPlugin(BaseDetectionPlugin):
         try:
             # --- PHASE 2: INFERENCE ---
             # Remove arbitrary PIL preprocessing that distorts colors. YOLO handles its own preprocessing.
-            results = self.model(image, verbose=False, imgsz=640, conf=0.1)
+            # Use imgsz=224 because that is what YOLOv8 classify models are natively trained on!
+            results = self.model(image, verbose=False, imgsz=224, conf=0.1)
             
             if not results or len(results) == 0:
                 return {"disease_name": "No detection", "confidence_score": 0.0, "suggestions": []}
@@ -70,19 +71,24 @@ class YOLOPlugin(BaseDetectionPlugin):
                 # Top 1
                 top1_index = result.probs.top1
                 confidence = float(result.probs.top1conf)
-                disease_name = result.names[top1_index]
+                
+                def format_plant_disease(raw_name):
+                    # Convert "Tomato___Late_blight" -> "Tomato - Late blight"
+                    return raw_name.replace("___", " - ").replace("_", " ")
+
+                disease_name = format_plant_disease(result.names[top1_index])
                 
                 # Get Top 3 if confidence is low to help the user
                 top5_indices = result.probs.top5
                 for idx in top5_indices:
                     if idx != top1_index:
                         suggestions.append({
-                            "name": result.names[idx].replace("_", " "),
+                            "name": format_plant_disease(result.names[idx]),
                             "confidence": round(float(result.probs.data[idx]), 3)
                         })
 
                 return {
-                    "disease_name": disease_name.replace("_", " "),
+                    "disease_name": disease_name,
                     "confidence_score": round(confidence, 3),
                     "suggestions": suggestions[:3] # Return top 3 alternatives
                 }

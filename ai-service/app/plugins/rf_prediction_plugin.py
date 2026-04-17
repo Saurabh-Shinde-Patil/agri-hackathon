@@ -16,12 +16,14 @@ import os
 import json
 import numpy as np
 import joblib
-from typing import Dict, Any, List
+from typing import List, Dict, Any
 from ..core.prediction_interface import BasePredictionPlugin
+from ..core.history_service import history_service
+from ..core.feature_engineer import FeatureEngineer
 
 # ─── Configuration ───────────────────────────────────────────────
-MODEL_PATH = os.environ.get("PEST_MODEL_PATH", "pest_rf_model_v2.pkl")
-ENCODER_PATH = os.environ.get("PEST_ENCODER_PATH", "pest_crop_encoder_v2.pkl")
+MODEL_PATH = os.environ.get("PEST_MODEL_PATH", "pest_rf_model_v3.pkl")
+ENCODER_PATH = os.environ.get("PEST_ENCODER_PATH", "pest_crop_encoder_v3.pkl")
 
 FEATURE_COLUMNS = [
     "temperature", "humidity", "rainfall",
@@ -334,6 +336,15 @@ class RFPredictionPlugin(BasePredictionPlugin):
     def predict(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Run Random Forest prediction on environmental + crop inputs."""
         try:
+            # --- INTEGRATED HISTORY & ACCURACY ---
+            # 1. Fetch History from MongoDB Atlas
+            farm_id = inputs.get("farm_id")
+            history = history_service.fetch_latest_history(farm_id)
+            
+            # 2. Extract Patterns
+            patterns = FeatureEngineer.extract_patterns(history)
+            
+            # 3. Features for Model
             crop_encoded = self._encode_crop(inputs.get("crop_type", "unknown"))
             
             features = np.array([[
@@ -347,9 +358,10 @@ class RFPredictionPlugin(BasePredictionPlugin):
             ]])
 
             # Get prediction and probabilities
-            risk_level = self.model.predict(features)[0]
+            raw_risk = self.model.predict(features)[0]
+            risk_level = str(raw_risk)
             probas = self.model.predict_proba(features)[0]
-            class_names = list(self.model.classes_)
+            class_names = [str(c) for c in self.model.classes_]
             
             # Get the probability for the predicted class
             pred_idx = class_names.index(risk_level)
@@ -361,10 +373,18 @@ class RFPredictionPlugin(BasePredictionPlugin):
                 for i, cls in enumerate(class_names)
             }
 
+            # 4. Refine Reasoning and Risk based on History
+            # If history shows high humidity duration, we boost the risk for accuracy
+            if patterns.get("high_humidity_duration_records", 0) > 5 and risk_level == "Medium":
+                risk_level = "High" # Upgrade risk if sustained danger detected
+            
             pest_threats = self._get_pest_threats(
                 inputs.get("crop_type", "unknown"), risk_level, inputs
             )
-            reason = self._generate_reason(inputs, risk_level, probability)
+            
+            # Use FeatureEngineer to generate a much smarter accuracy-driven reason
+            reason = FeatureEngineer.format_reason(patterns, inputs)
+            
             recommendations_top = self._generate_recommendations(
                 inputs.get("crop_type", "unknown"), risk_level, pest_threats
             )
@@ -388,6 +408,7 @@ class RFPredictionPlugin(BasePredictionPlugin):
                 "pest_threats": ranked_threats,
                 "recommendations": recommendations_top, # Keep as fallback
                 "all_probabilities": all_probabilities,
+                "historical_patterns": patterns, # Include for front-end transparency
                 "source": "ml_model",
                 "model_type": "RandomForest"
             }
